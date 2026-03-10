@@ -4,6 +4,8 @@ import {
   forwardRef,
   ForwardRefRenderFunction,
   useState,
+  useRef,
+  useEffect,
 } from 'react';
 import { useEditor } from 'canva-editor/hooks';
 import EditInlineInput from 'canva-editor/components/EditInlineInput';
@@ -18,6 +20,8 @@ import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 import styled from '@emotion/styled';
 import ExportIcon from 'canva-editor/icons/ExportIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 const Button = styled('button')`
   display: flex;
@@ -30,6 +34,34 @@ const Button = styled('button')`
   cursor: pointer;
   &:hover {
     background: rgb(255 255 255 / 15%);
+  }
+`;
+
+const ProfileMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  overflow: hidden;
+  z-index: 1000;
+`;
+
+const MenuItem = styled.button`
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  &:hover {
+    background: #f5f5f5;
   }
 `;
 
@@ -50,6 +82,29 @@ const HeaderLayout: ForwardRefRenderFunction<
   const { actions, query } = useEditor();
   const isMobile = useMobileDetect();
   const t = useTranslate();
+  const { user, setShowAuthPopup, setShowSettingsPopup, setUser } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+      setUser(null);
+      setMenuOpen(false);
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
 
   return (
     <div
@@ -182,17 +237,39 @@ const HeaderLayout: ForwardRefRenderFunction<
               </div>{' '}
               <span css={{ marginRight: 4, marginLeft: 4 }}>{t('header.export', 'Export')}</span>
             </Button>
-            <Button
-              onClick={() => {
-                console.log('Login clicked');
-              }}
-              css={{
-                border: '1px solid hsla(0,0%,100%,.4)',
-                padding: '8px 16px',
-              }}
-            >
-              <span css={{ marginRight: 4, marginLeft: 4 }}>Login</span>
-            </Button>
+            
+            <div css={{ position: 'relative', marginLeft: 16 }} ref={menuRef}>
+              {user ? (
+                <>
+                  <Button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    css={{
+                      border: '1px solid hsla(0,0%,100%,.4)',
+                      padding: '8px 16px',
+                      background: menuOpen ? 'rgb(255 255 255 / 15%)' : 'rgb(255 255 255 / 7%)'
+                    }}
+                  >
+                    <span css={{ marginRight: 4, marginLeft: 4 }}>{user.name || user.email}</span>
+                  </Button>
+                  {menuOpen && (
+                    <ProfileMenu>
+                      <MenuItem onClick={() => { setShowSettingsPopup(true); setMenuOpen(false); }}>Settings</MenuItem>
+                      <MenuItem onClick={handleLogout}>Log out</MenuItem>
+                    </ProfileMenu>
+                  )}
+                </>
+              ) : (
+                <Button
+                  onClick={() => setShowAuthPopup(true)}
+                  css={{
+                    border: '1px solid hsla(0,0%,100%,.4)',
+                    padding: '8px 16px',
+                  }}
+                >
+                  <span css={{ marginRight: 4, marginLeft: 4 }}>Login</span>
+                </Button>
+              )}
+            </div>
           </>
         )}
       </div>

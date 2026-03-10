@@ -91,6 +91,9 @@ function parseMultipart(body: Buffer, contentType: string) {
 }
 
 function mockUploadPlugin(): Plugin {
+  const usersStore = new Map(); // email -> { email, password, name }
+  const sessionsStore = new Map(); // token -> email
+
   return {
     name: 'mock-upload-api',
     configureServer(server: ViteDevServer) {
@@ -103,6 +106,65 @@ function mockUploadPlugin(): Plugin {
           res.end();
           return;
         }
+
+        // --- AUTH MOCK ---
+        if (url.startsWith('/api/auth/')) {
+          try {
+            const bodyStr = await readBody(req);
+            const body = bodyStr.length ? JSON.parse(bodyStr.toString()) : {};
+            
+            if (url === '/api/auth/signup' && method === 'POST') {
+              const { email, password, name } = body;
+              if (usersStore.has(email)) return json(res, 400, { error: 'User already exists' });
+              usersStore.set(email, { email, password, name });
+              const token = `tok_${Date.now()}`;
+              sessionsStore.set(token, email);
+              res.setHeader('Set-Cookie', `auth_token=${token}; Path=/; HttpOnly`);
+              return json(res, 200, { success: true, user: { email, name } });
+            }
+            
+            if (url === '/api/auth/login' && method === 'POST') {
+              const { email, password } = body;
+              const user = usersStore.get(email);
+              if (!user || user.password !== password) return json(res, 401, { error: 'Invalid credentials' });
+              const token = `tok_${Date.now()}`;
+              sessionsStore.set(token, email);
+              res.setHeader('Set-Cookie', `auth_token=${token}; Path=/; HttpOnly`);
+              return json(res, 200, { success: true, user: { email, name: user.name } });
+            }
+
+            if (url === '/api/auth/logout' && method === 'POST') {
+              res.setHeader('Set-Cookie', `auth_token=; Path=/; HttpOnly; Max-Age=0`);
+              return json(res, 200, { success: true });
+            }
+
+            if (url === '/api/auth/user' && method === 'GET') {
+              const cookie = req.headers.cookie || '';
+              const match = cookie.match(/auth_token=([^;]+)/);
+              if (!match) return json(res, 401, { error: 'Not authenticated' });
+              const email = sessionsStore.get(match[1]);
+              if (!email) return json(res, 401, { error: 'Invalid session' });
+              const user = usersStore.get(email);
+              return json(res, 200, { success: true, user: { email: user.email, name: user.name } });
+            }
+
+            if (url === '/api/auth/password' && method === 'POST') {
+              const cookie = req.headers.cookie || '';
+              const match = cookie.match(/auth_token=([^;]+)/);
+              if (!match) return json(res, 401, { error: 'Not authenticated' });
+              const email = sessionsStore.get(match[1]);
+              if (!email) return json(res, 401, { error: 'Invalid session' });
+              const user = usersStore.get(email);
+              const { oldPassword, newPassword } = body;
+              if (user.password !== oldPassword) return json(res, 400, { error: 'Incorrect old password' });
+              user.password = newPassword;
+              return json(res, 200, { success: true });
+            }
+          } catch (err) {
+            return json(res, 500, { error: 'Auth error' });
+          }
+        }
+        // --- END AUTH MOCK ---
 
         // POST /your-uploads/upload
         if (method === 'POST' && url.includes('/your-uploads/upload')) {
