@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
@@ -9,27 +11,28 @@ export async function onRequestPost(context) {
     }
 
     const token = match[1];
-    const email = await env.USERS_KV.get(`session:${token}`);
+    const session = await env.DB.prepare("SELECT email FROM sessions WHERE token = ?").bind(token).first();
 
-    if (!email) {
+    if (!session) {
       return new Response(JSON.stringify({ error: 'Invalid session' }), { status: 401 });
     }
 
-    const userStr = await env.USERS_KV.get(`user:${email}`);
-    if (!userStr) {
+    const email = session.email;
+    const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+
+    if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), { status: 401 });
     }
 
-    const user = JSON.parse(userStr);
     const body = await request.json();
     const { oldPassword, newPassword } = body;
 
-    if (user.password !== oldPassword) {
+    if (!(await bcrypt.compare(oldPassword, user.password_hash))) {
       return new Response(JSON.stringify({ error: 'Incorrect old password' }), { status: 400 });
     }
 
-    user.password = newPassword;
-    await env.USERS_KV.put(`user:${email}`, JSON.stringify(user));
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await env.DB.prepare("UPDATE users SET password_hash = ? WHERE email = ?").bind(newPasswordHash, email).run();
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

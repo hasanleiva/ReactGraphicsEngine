@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
@@ -8,16 +10,20 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
     }
 
-    const existingUser = await env.USERS_KV.get(`user:${email}`);
+    const existingUser = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
     if (existingUser) {
       return new Response(JSON.stringify({ error: 'User already exists' }), { status: 400 });
     }
 
-    const user = { email, password, name };
-    await env.USERS_KV.put(`user:${email}`, JSON.stringify(user));
+    const passwordHash = await bcrypt.hash(password, 10);
+    await env.DB.prepare("INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)")
+      .bind(email, passwordHash, name)
+      .run();
 
     const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-    await env.USERS_KV.put(`session:${token}`, email, { expirationTtl: 60 * 60 * 24 * 7 }); // 7 days
+    await env.DB.prepare("INSERT INTO sessions (token, email, expires_at) VALUES (?, ?, datetime('now', '+7 days'))")
+      .bind(token, email)
+      .run();
 
     const headers = new Headers();
     headers.set('Set-Cookie', `auth_token=${token}; Path=/; HttpOnly; Secure; SameSite=Lax`);

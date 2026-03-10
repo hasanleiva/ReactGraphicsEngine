@@ -9,18 +9,18 @@ export async function onRequestGet(context) {
     }
 
     const token = match[1];
-    const email = await env.USERS_KV.get(`session:${token}`);
+    const session = await env.DB.prepare("SELECT email FROM sessions WHERE token = ?").bind(token).first();
 
-    if (!email) {
+    if (!session) {
       return new Response(JSON.stringify({ error: 'Invalid session' }), { status: 401 });
     }
 
-    const userStr = await env.USERS_KV.get(`user:${email}`);
-    if (!userStr) {
+    const email = session.email;
+    const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+
+    if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), { status: 401 });
     }
-
-    const user = JSON.parse(userStr);
 
     return new Response(JSON.stringify({ success: true, user: { email: user.email, name: user.name } }), {
       status: 200,

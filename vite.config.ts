@@ -4,6 +4,7 @@ import type { Plugin, ViteDevServer } from 'vite';
 import { IncomingMessage, ServerResponse } from 'http';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -116,7 +117,8 @@ function mockUploadPlugin(): Plugin {
             if (url === '/api/auth/signup' && method === 'POST') {
               const { email, password, name } = body;
               if (usersStore.has(email)) return json(res, 400, { error: 'User already exists' });
-              usersStore.set(email, { email, password, name });
+              const passwordHash = await bcrypt.hash(password, 10);
+              usersStore.set(email, { email, passwordHash, name });
               const token = `tok_${Date.now()}`;
               sessionsStore.set(token, email);
               res.setHeader('Set-Cookie', `auth_token=${token}; Path=/; HttpOnly`);
@@ -126,7 +128,7 @@ function mockUploadPlugin(): Plugin {
             if (url === '/api/auth/login' && method === 'POST') {
               const { email, password } = body;
               const user = usersStore.get(email);
-              if (!user || user.password !== password) return json(res, 401, { error: 'Invalid credentials' });
+              if (!user || !(await bcrypt.compare(password, user.passwordHash))) return json(res, 401, { error: 'Invalid credentials' });
               const token = `tok_${Date.now()}`;
               sessionsStore.set(token, email);
               res.setHeader('Set-Cookie', `auth_token=${token}; Path=/; HttpOnly`);
@@ -156,8 +158,8 @@ function mockUploadPlugin(): Plugin {
               if (!email) return json(res, 401, { error: 'Invalid session' });
               const user = usersStore.get(email);
               const { oldPassword, newPassword } = body;
-              if (user.password !== oldPassword) return json(res, 400, { error: 'Incorrect old password' });
-              user.password = newPassword;
+              if (!(await bcrypt.compare(oldPassword, user.passwordHash))) return json(res, 400, { error: 'Incorrect old password' });
+              user.passwordHash = await bcrypt.hash(newPassword, 10);
               return json(res, 200, { success: true });
             }
           } catch (err) {

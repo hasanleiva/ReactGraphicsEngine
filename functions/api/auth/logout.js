@@ -6,7 +6,7 @@ export async function onRequestPost(context) {
 
     if (match) {
       const token = match[1];
-      await env.USERS_KV.delete(`session:${token}`);
+      await env.DB.prepare("DELETE FROM sessions WHERE token = ?").bind(token).run();
     }
 
     const headers = new Headers();
