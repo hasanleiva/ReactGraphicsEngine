@@ -18,8 +18,6 @@ import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 import styled from '@emotion/styled';
 import ExportIcon from 'canva-editor/icons/ExportIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
-import { useAuth } from '../contexts/AuthContext';
-import { ProfileMenu } from '../components/ProfileMenu';
 
 const Button = styled('button')`
   display: flex;
@@ -52,7 +50,6 @@ const HeaderLayout: ForwardRefRenderFunction<
   const { actions, query } = useEditor();
   const isMobile = useMobileDetect();
   const t = useTranslate();
-  const { isAuthenticated, setShowAuthPopup } = useAuth();
 
   return (
     <div
@@ -185,22 +182,17 @@ const HeaderLayout: ForwardRefRenderFunction<
               </div>{' '}
               <span css={{ marginRight: 4, marginLeft: 4 }}>{t('header.export', 'Export')}</span>
             </Button>
-            {isAuthenticated ? (
-              <ProfileMenu />
-            ) : (
-              <Button
-                onClick={() => {
-                  setShowAuthPopup(true);
-                }}
-                css={{
-                  border: '1px solid hsla(0,0%,100%,.4)',
-                  padding: '8px 16px',
-                  marginLeft: 16,
-                }}
-              >
-                <span css={{ marginRight: 4, marginLeft: 4 }}>Login</span>
-              </Button>
-            )}
+            <Button
+              onClick={() => {
+                console.log('Login clicked');
+              }}
+              css={{
+                border: '1px solid hsla(0,0%,100%,.4)',
+                padding: '8px 16px',
+              }}
+            >
+              <span css={{ marginRight: 4, marginLeft: 4 }}>Login</span>
+            </Button>
           </>
         )}
       </div>

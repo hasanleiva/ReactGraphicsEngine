@@ -11,9 +11,9 @@ import axios from 'axios';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 
 interface Template {
-  key: string;
-  name: string;
-  lastModified: string;
+  img: ImageData;
+  data: Array<SerializedPage> | SerializedPage;
+  pages: number;
 }
 const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -29,21 +29,43 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const isMobile = useMobileDetect();
   const t = useTranslate();
   const loadData = useCallback(
-    async () => {
+    async (offset = 0, kw = '') => {
+      dataRef.current = true;
       setIsLoading(true);
-      try {
-        const res = await axios.get<{ templates: Template[] }>('/api/templates');
-        setTemplates(res.data.templates);
-      } catch (err) {
-        console.error(err);
+      const res = await axios.get<SearchResponse<Template>>(
+        `${config.apis.url}${config.apis.searchTemplates}?ps=18&pi=${offset}&kw=${kw}`
+      );
+
+      if (res.data.data) {
+        setTemplates((templates) => [...templates, ...res.data.data]);
       }
       setIsLoading(false);
+      if (res.data.data.length > 0) {
+        dataRef.current = false;
+      }
     },
     [setIsLoading]
   );
 
   useEffect(() => {
-    loadData();
+    loadData(offset, keyword);
+  }, [offset, keyword]);
+
+  useEffect(() => {
+    const handleLoadMore = async (e: Event) => {
+      const node = e.target as HTMLDivElement;
+      if (
+        node.scrollHeight - node.scrollTop - 80 <= node.clientHeight &&
+        !dataRef.current
+      ) {
+        setOffset((prevOffset) => prevOffset + 1);
+      }
+    };
+
+    scrollRef.current?.addEventListener('scroll', handleLoadMore);
+    return () => {
+      scrollRef.current?.removeEventListener('scroll', handleLoadMore);
+    };
   }, [loadData]);
 
   const handleSearch = async (kw: string) => {
@@ -55,10 +77,8 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     setTemplates([]);
   };
 
-  const addPages = async (key: string) => {
+  const addPages = async (data: Array<SerializedPage> | SerializedPage) => {
     try {
-      const res = await axios.get(`/api/templates/${key}`);
-      const data = res.data;
       if (Array.isArray(data)) {
         data.forEach((page, idx) => {
           const serializedData: SerializedPage = unpack(page);
@@ -129,28 +149,26 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           {templates.map((item, index) => (
             <div
               key={index}
-              css={{ 
-                cursor: 'pointer', 
-                position: 'relative',
-                background: '#f3f4f6',
-                borderRadius: 8,
-                padding: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 100,
-                textAlign: 'center',
-                fontWeight: 500,
-                border: '1px solid #e5e7eb',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  borderColor: '#3b82f6',
-                  background: '#eff6ff'
-                }
-              }}
-              onClick={() => addPages(item.key)}
+              css={{ cursor: 'pointer', position: 'relative' }}
+              onClick={() => addPages(item.data)}
             >
-              {item.name}
+              {!!item?.img && <img src={item?.img?.url} width={item?.img?.width} height={item?.img?.height} loading='lazy' />}
+              {item.pages > 1 && (
+                <span
+                  css={{
+                    position: 'absolute',
+                    bottom: 5,
+                    right: 5,
+                    backgroundColor: 'rgba(17,23,29,.6)',
+                    padding: '1px 6px',
+                    borderRadius: 6,
+                    color: '#fff',
+                    fontSize: 10,
+                  }}
+                >
+                  {item.pages}
+                </span>
+              )}
             </div>
           ))}
           {isLoading && <div>{t('common.loading', 'Loading...')}</div>}
