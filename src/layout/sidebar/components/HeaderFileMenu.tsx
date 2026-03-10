@@ -28,8 +28,6 @@ import HamburgerIcon from 'canva-editor/icons/HamburgerIcon';
 import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 import TrashIcon from 'canva-editor/icons/TrashIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
-import { useAuth } from 'canva-editor/contexts/AuthContext';
-import apiClient from 'canva-editor/services/base-request';
 
 interface Props {
   designName: string;
@@ -60,7 +58,6 @@ const HeaderFileMenu: FC<Props> = ({ designName, onRemove }) => {
   const widthRef = useRef<HTMLInputElement>(null);
   const heightRef = useRef<HTMLInputElement>(null);
   const t = useTranslate();
-  const { user } = useAuth();
   const isDisabledResize = useMemo(
     () => (size?.width || 0) < 100 || (size?.height || 0) < 100,
     [size]
@@ -140,22 +137,13 @@ const HeaderFileMenu: FC<Props> = ({ designName, onRemove }) => {
       ],
     },
     { label: 'Divider', type: 'divider' },
-    ...(user?.role === 'admin' ? [{
+    {
       label: t('header.save', 'Save'),
-      type: 'normal' as const,
+      type: 'normal',
       icon: <SyncedIcon />,
       shortcut: t('header.allChangesSaved', 'All changes saved'),
-      action: async () => {
-        try {
-          const data = pack(query.serialize(), dataMapping)[0];
-          await apiClient.post('/api/templates', { name: designName || 'Untitled', data });
-          alert('Template saved successfully!');
-        } catch (err) {
-          console.error(err);
-          alert('Failed to save template');
-        }
-      },
-    }] : []),
+      action: () => {},
+    },
     {
       label: t('header.preview', 'Preview'),
       type: 'normal',

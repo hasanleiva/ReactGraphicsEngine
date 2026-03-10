@@ -54,17 +54,16 @@ export default function ProfileMenu() {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-[320px] bg-white rounded shadow-[0_2px_4px_rgba(0,0,0,0.1)] py-2 z-50 border border-[#e3e6e9]">
-          <div className="px-4 pt-4 pb-2 border-b border-[rgba(57,76,96,.15)] mb-2">
-            <div className="text-[18px] font-bold text-[#000] truncate">{user.email}</div>
-            <div className="text-[13px] text-[#909090] mt-2 font-['Arial']">Account</div>
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] py-2 z-50 border border-gray-100">
+          <div className="px-5 py-3 border-b border-gray-100 mb-1">
+            <p className="text-[13px] text-gray-800 truncate">{user.email}</p>
           </div>
           <button
             onClick={() => {
               setIsOpen(false);
               setShowSettings(true);
             }}
-            className="w-full text-left px-4 py-2 text-[14px] leading-[22px] text-gray-800 hover:bg-[rgba(64,87,109,.07)] transition-colors"
+            className="w-full text-left px-5 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Settings
           </button>
@@ -73,7 +72,7 @@ export default function ProfileMenu() {
               setIsOpen(false);
               signOut();
             }}
-            className="w-full text-left px-4 py-2 text-[14px] leading-[22px] text-gray-800 hover:bg-[rgba(64,87,109,.07)] transition-colors"
+            className="w-full text-left px-5 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Log out
           </button>
