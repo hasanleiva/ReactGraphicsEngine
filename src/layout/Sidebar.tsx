@@ -58,16 +58,6 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
       displayName: t('sidebar.image', 'Image'),
       icon: <ImageIcon />,
     },
-    {
-      name: 'Shape',
-      displayName: t('sidebar.shape', 'Shape'),
-      icon: <ElementsIcon />,
-    },
-    {
-      name: 'Frame',
-      displayName: t('sidebar.frame', 'Frame'),
-      icon: <FrameIcon />,
-    },
   ];
 
   const getSidebarComponent = (tabName: string) => {
@@ -159,26 +149,6 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
         />
         {!isMobile && (
           <>
-            <div
-              css={{
-                position: 'absolute',
-                bottom: 2,
-                left: 2,
-              }}
-            >
-              <EditorButton
-                tooltip="Source code"
-                css={{ display: 'flex', flexDirection: 'column', gap: 2, height: 50, width: 60 }}
-                onClick={() => {
-                  actions.goToGithubPage();
-                }}
-              >
-                <span>
-                  <GithubIcon />
-                </span>
-                <span css={{ fontSize: 10, lineHeight: 1.6, fontWeight: 600 }}>v{version}</span>
-              </EditorButton>
-            </div>
             {state.sideBarTab && (
               <div
                 css={{

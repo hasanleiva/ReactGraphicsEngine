@@ -110,8 +110,7 @@ const HeaderLayout: ForwardRefRenderFunction<
     <div
       ref={ref}
       css={{
-        background:
-          'linear-gradient(to right, #2C5364, #203A43, #0F2027)',
+        background: '#0a0f1d',
         padding: '12px 24px',
         display: 'flex',
         justifyContent: 'space-between',
