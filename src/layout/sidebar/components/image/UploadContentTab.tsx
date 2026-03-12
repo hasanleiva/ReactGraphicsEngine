@@ -32,28 +32,7 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
   const [removingImages, setRemovingImages] = useState<Set<string>>(new Set());
   const t = useTranslate();
   useEffect(() => {
-    const fetchUserImages = async () => {
-      try {
-        setLoading(true);
-        const response = await apiClient.get(
-          `${config.apis.url}${config.apis.fetchUserImages}`
-        );
-        setImages(
-          response.data.map((img: any) => ({
-            id: img.id,
-            documentId: img.documentId,
-            url: getBestImageFormat(img.img).url,
-            type: img.img.mime,
-          }))
-        );
-      } catch (err) {
-        setError(t('sidebar.upload.failedToFetchImages', 'Failed to fetch images'));
-        console.error('Fetch images error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserImages();
+    // Session-based uploads only, no need to fetch from backend
   }, []);
 
   const addImage = async (url: string, position?: Delta) => {
@@ -78,21 +57,8 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
   };
 
   const uploadImage = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await apiClient.post(
-        `${config.apis.url}${config.apis.uploadUserImage}`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw new Error(t('sidebar.upload.failedToUploadImage', `Failed to upload ${file.name}`));
-    }
+    const url = URL.createObjectURL(file);
+    return { success: true, url };
   };
 
   const removeImage = async (imageId: string) => {
@@ -101,14 +67,6 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
     }
     try {
       setRemovingImages((prev) => new Set(prev).add(imageId));
-      if (imageId.startsWith('img_')) {
-        await apiClient.delete(
-          `${config.apis.url}${config.apis.removeUserImage}/${imageId}`,
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
       setImages((prev) => prev.filter((img) => img.documentId !== imageId));
     } catch (err) {
       setError(t('sidebar.upload.failedToRemoveImage', 'Failed to remove image'));
