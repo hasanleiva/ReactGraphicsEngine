@@ -5,6 +5,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -236,12 +237,36 @@ function mockUploadPlugin(): Plugin {
         // All search/suggestion endpoints → empty results
         const emptyRoutes = [
           '/search-images', '/search-templates', '/search-texts',
-          '/search-shapes', '/search-frames', '/search-fonts',
+          '/search-shapes', '/search-frames',
           '/template-suggestion', '/text-suggestion', '/image-suggestion',
           '/shape-suggestion', '/frame-suggestion',
         ];
         if (method === 'GET' && emptyRoutes.some(r => url.includes(r))) {
           return json(res, 200, { data: [], total: 0 });
+        }
+
+        if (method === 'GET' && url.includes('/search-fonts')) {
+          const fontsDir = resolve(__dirname, 'public/fonts');
+          const fontData = [];
+          if (fs.existsSync(fontsDir)) {
+            const files = fs.readdirSync(fontsDir);
+            for (const file of files) {
+              if (file.match(/\.(ttf|otf|woff|woff2)$/i)) {
+                const familyName = file.replace(/\.(ttf|otf|woff|woff2)$/i, '').replace(/[-_]/g, ' ');
+                fontData.push({
+                  family: familyName,
+                  styles: [
+                    {
+                      name: `${familyName} Regular`,
+                      style: 'regular',
+                      url: `/fonts/${file}`
+                    }
+                  ]
+                });
+              }
+            }
+          }
+          return json(res, 200, { data: fontData, total: fontData.length });
         }
 
         next();
