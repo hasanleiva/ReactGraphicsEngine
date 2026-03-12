@@ -90,4 +90,12 @@ function handleFontStyleName(style: string) {
   return getFontStrongName(fontStrong);
 }
 
-export { groupFontsByFamily, handleFontStyle, handleFontStyleName };
+function getFontFormat(url: string) {
+  if (url.match(/\.woff2$/i)) return "format('woff2')";
+  if (url.match(/\.woff$/i)) return "format('woff')";
+  if (url.match(/\.ttf$/i)) return "format('truetype')";
+  if (url.match(/\.otf$/i)) return "format('opentype')";
+  return "";
+}
+
+export { groupFontsByFamily, handleFontStyle, handleFontStyleName, getFontFormat };

@@ -259,7 +259,7 @@ function mockUploadPlugin(): Plugin {
                     {
                       name: `${familyName} Regular`,
                       style: 'regular',
-                      url: `/fonts/${file}`
+                      url: `/fonts/${encodeURIComponent(file)}`
                     }
                   ]
                 });

@@ -1,7 +1,7 @@
 import { css, Global } from '@emotion/react';
 import React, { FC, useMemo } from 'react';
 import { FontData } from '../../types';
-import { handleFontStyle } from 'canva-editor/utils/fontHelper';
+import { handleFontStyle, getFontFormat } from 'canva-editor/utils/fontHelper';
 
 export interface FontStyleProps {
     font: FontData;
@@ -14,7 +14,7 @@ const FontStyle: FC<FontStyleProps> = ({ font }) => {
             @font-face {
                 font-family: '${font.name}';
                 ${handleFontStyle(font.style)}
-                src: url(${font.url}) format('woff2');
+                src: url('${font.url}') ${getFontFormat(font.url)};
                 font-display: block;
             }
         `);
