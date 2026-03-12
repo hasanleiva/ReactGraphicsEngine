@@ -56,9 +56,17 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
     }
   };
 
-  const uploadImage = async (file: File) => {
-    const url = URL.createObjectURL(file);
-    return { success: true, url };
+  const uploadImage = async (file: File): Promise<{ success: boolean; url: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve({ success: true, url: e.target?.result as string });
+      };
+      reader.onerror = (err) => {
+        reject(err);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const removeImage = async (imageId: string) => {
