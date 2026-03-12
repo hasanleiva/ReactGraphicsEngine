@@ -31,7 +31,7 @@ export async function onRequest(context) {
             {
               name: `${familyName} Regular`,
               style: "regular",
-              url: `/fonts/${encodeURIComponent(key)}`
+              url: `/fonts/${key.split('/').map(encodeURIComponent).join('/')}`
             }
           ]
         });
