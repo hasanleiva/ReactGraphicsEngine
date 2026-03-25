@@ -176,9 +176,10 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         width: '100%',
         height: '100%',
         flexDirection: 'column',
-        overflowY: 'auto',
         display: 'flex',
+        overflow: 'hidden',
         padding: 16,
+        boxSizing: 'border-box',
       }}
     >
       {!isMobile && <CloseSidebarButton onClose={onClose} />}
@@ -216,16 +217,23 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       )}
 
       <div
-        css={{ flexDirection: 'column', overflowY: 'auto', display: 'flex' }}
+        css={{ flexDirection: 'column', display: 'flex', flexGrow: 1, overflow: 'hidden' }}
       >
         <div
           ref={scrollRef}
           css={{
             flexGrow: 1,
             overflowY: 'auto',
+            overflowX: 'hidden',
             display: 'grid',
             gridTemplateColumns: 'repeat(2,minmax(0,1fr))',
             gridGap: 8,
+            paddingBottom: 16,
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            }
           }}
         >
           {!selectedPack ? (
