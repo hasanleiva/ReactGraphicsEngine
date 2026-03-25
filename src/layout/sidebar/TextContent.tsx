@@ -168,6 +168,7 @@ const TextContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         flexDirection: 'column',
         display: 'flex',
         padding: 16,
+        boxSizing: 'border-box',
       }}
     >
       {!isMobile && <CloseSidebarButton onClose={onClose} />}
@@ -176,7 +177,9 @@ const TextContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         css={{
           flexDirection: 'column',
           overflowY: 'auto',
+          overflowX: 'hidden',
           display: 'flex',
+          flexGrow: 1,
         }}
       >
         <p

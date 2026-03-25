@@ -99,6 +99,7 @@ const UnsplashTab: FC = () => {
         css={{
           flex: 1,
           overflowY: 'auto',
+          overflowX: 'hidden',
           paddingTop: 8,
           marginBottom: 8,
         }}

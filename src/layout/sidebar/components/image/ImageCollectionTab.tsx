@@ -121,6 +121,7 @@ function ImageCollectionTab({ onClose }: { onClose: () => void }) {
         css={{
           flex: 1, height: '100%',
           overflowY: 'auto',
+          overflowX: 'hidden',
           display: 'grid',
           gridTemplateColumns: 'repeat(3,minmax(0,1fr))',
           gridGap: 8,

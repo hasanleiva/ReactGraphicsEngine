@@ -177,7 +177,6 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         height: '100%',
         flexDirection: 'column',
         display: 'flex',
-        overflow: 'hidden',
         padding: 16,
         boxSizing: 'border-box',
       }}
@@ -185,7 +184,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       {!isMobile && <CloseSidebarButton onClose={onClose} />}
       
       {user?.role === 'admin' && (
-        <div css={{ marginBottom: 16, display: 'flex', gap: 8, flexDirection: 'column' }}>
+        <div css={{ marginBottom: 16, display: 'flex', gap: 8, flexDirection: 'column', flexShrink: 0 }}>
           <div css={{ fontSize: 14, fontWeight: 600 }}>Admin: Save to Pack</div>
           <input 
             type="text" 
@@ -217,23 +216,21 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       )}
 
       <div
-        css={{ flexDirection: 'column', display: 'flex', flexGrow: 1, overflow: 'hidden' }}
+        ref={scrollRef}
+        css={{ 
+          flexDirection: 'column', 
+          overflowY: 'auto', 
+          overflowX: 'hidden',
+          display: 'flex',
+          flexGrow: 1
+        }}
       >
         <div
-          ref={scrollRef}
           css={{
-            flexGrow: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
             display: 'grid',
             gridTemplateColumns: 'repeat(2,minmax(0,1fr))',
             gridGap: 8,
-            paddingBottom: 16,
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            }
+            padding: 4, // Add a little padding so hover scale doesn't clip
           }}
         >
           {!selectedPack ? (

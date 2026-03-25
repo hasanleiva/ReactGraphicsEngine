@@ -198,8 +198,8 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
         width: '100%',
         height: '100%',
         flexDirection: 'column',
-        overflowY: 'auto',
         display: visibility ? 'flex' : 'none',
+        boxSizing: 'border-box',
       }}
     >
       {!isMobile && <CloseSidebarButton onClose={onClose} />}
@@ -207,6 +207,7 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
         css={{
           margin: 16,
           position: 'relative',
+          flexShrink: 0,
         }}
       >
         <div
@@ -275,7 +276,14 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
           {error}
         </div>
       )}
-      <div css={{ padding: '16px' }}>
+      <div css={{ 
+        padding: '16px',
+        flexGrow: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
         {images.length === 0 ? (
           <div css={{ textAlign: 'center', color: '#666', fontSize: 14 }}>
             {t('sidebar.upload.noImagesAvailable', 'No images available')}
@@ -283,11 +291,10 @@ const UploadContentTab: FC<UploadContentProps> = ({ visibility, onClose }) => {
         ) : (
           <div
             css={{
-              flexGrow: 1,
-              overflowY: 'auto',
               display: 'grid',
               gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
               gridGap: 8,
+              padding: 4,
             }}
           >
             {images.map((item) => (

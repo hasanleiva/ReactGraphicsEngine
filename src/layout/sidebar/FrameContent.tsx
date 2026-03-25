@@ -119,30 +119,36 @@ const FrameContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         width: '100%',
         height: '100%',
         flexDirection: 'column',
-        overflowY: 'auto',
         display: 'flex',
         padding: 16,
+        boxSizing: 'border-box',
       }}
     >
       {!isMobile && <CloseSidebarButton onClose={onClose} />}
       <div
         css={{
           marginBottom: 16,
+          flexShrink: 0,
         }}
       >
         <FrameSearchBox onStartSearch={handleSearch} />
       </div>
       <div
-        css={{ flexDirection: 'column', overflowY: 'auto', display: 'flex' }}
+        ref={scrollRef}
+        css={{ 
+          flexDirection: 'column', 
+          overflowY: 'auto', 
+          overflowX: 'hidden',
+          display: 'flex',
+          flexGrow: 1
+        }}
       >
         <div
-          ref={scrollRef}
           css={{
-            flexGrow: 1,
-            overflowY: 'auto',
             display: 'grid',
             gridTemplateColumns: 'repeat(3,minmax(0,1fr))',
             gridGap: 8,
+            padding: 4,
           }}
         >
           {frames.map((frame, index) => (
