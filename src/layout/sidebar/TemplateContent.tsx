@@ -33,6 +33,8 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [packName, setPackName] = useState('');
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const packs = useMemo(() => {
     const grouped: Record<string, string[]> = { 'Default': [] };
     r2Templates.forEach(id => {
@@ -57,6 +59,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       const templateName = prompt('Enter template name:', `template_${Date.now()}`);
       if (!templateName) return;
       
+      setIsSaving(true);
       const id = `${packName}/${templateName}`;
       await axios.post('/api/templates/save', { id, content });
       alert('Saved successfully!');
@@ -64,6 +67,8 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     } catch (err) {
       console.error(err);
       alert('Failed to save');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -150,12 +155,18 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const loadR2Template = async (id: string) => {
     try {
+      setIsLoading(true);
       const res = await axios.get(`/api/templates/get/${id}`);
       if (res.data.success) {
         addPages(res.data.content);
+      } else {
+        alert('Failed to load template');
       }
     } catch (err) {
       console.error('Failed to load template', err);
+      alert('Failed to load template');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -189,16 +200,17 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           />
           <button 
             onClick={handleSaveToPack}
+            disabled={isSaving}
             css={{
               padding: '8px 12px',
-              background: '#3a3a4c',
+              background: isSaving ? '#8383A2' : '#3a3a4c',
               color: '#fff',
               borderRadius: 4,
-              cursor: 'pointer',
+              cursor: isSaving ? 'not-allowed' : 'pointer',
               fontWeight: 600
             }}
           >
-            Save Current Design to Pack
+            {isSaving ? 'Saving...' : 'Save Current Design to Pack'}
           </button>
         </div>
       )}
@@ -232,6 +244,11 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                     textAlign: 'center',
                     fontWeight: 'bold',
                     minHeight: '100px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.2s',
+                    ':hover': {
+                      transform: 'scale(1.02)'
+                    }
                   }}
                   onClick={() => setSelectedPack(packName)}
                 >
@@ -267,7 +284,22 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           ) : (
             <>
               <div 
-                css={{ gridColumn: '1 / -1', cursor: 'pointer', padding: '8px', background: '#f0f0f0', borderRadius: 4, textAlign: 'center', fontWeight: 'bold' }}
+                css={{ 
+                  gridColumn: '1 / -1', 
+                  cursor: 'pointer', 
+                  padding: '12px', 
+                  background: '#3a3a4c', 
+                  color: '#fff',
+                  borderRadius: 4, 
+                  textAlign: 'center', 
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  transition: 'background 0.2s',
+                  ':hover': {
+                    background: '#2a2a3c'
+                  }
+                }}
                 onClick={() => setSelectedPack(null)}
               >
                 ← Back to Packs
@@ -286,6 +318,11 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                     textAlign: 'center',
                     wordBreak: 'break-all',
                     minHeight: '100px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.2s',
+                    ':hover': {
+                      transform: 'scale(1.02)'
+                    }
                   }}
                   onClick={() => loadR2Template(id)}
                 >
