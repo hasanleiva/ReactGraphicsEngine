@@ -1,14 +1,15 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useEditor } from 'canva-editor/hooks';
 import { PageSize, SerializedPage, SearchResponse, ImageData } from 'canva-editor/types';
 import CloseSidebarButton from './CloseButton';
 import TemplateSearchBox from './components/TemplateSearchBox';
 import HorizontalCarousel from 'canva-editor/components/carousel/HorizontalCarousel';
 import OutlineButton from 'canva-editor/components/button/OutlineButton';
-import { unpack } from 'canva-editor/utils/minifier';
+import { unpack, pack, dataMapping } from 'canva-editor/utils/minifier';
 import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 import axios from 'axios';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Template {
   img: ImageData;
@@ -19,8 +20,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [r2Templates, setR2Templates] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { actions, activePage, config } = useEditor((state, config) => ({
-    config,
+  const { actions, activePage, config, query } = useEditor((state, query) => ({
     activePage: state.activePage,
   }));
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -29,6 +29,43 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [keyword, setKeyword] = useState('');
   const isMobile = useMobileDetect();
   const t = useTranslate();
+  const { user } = useAuth();
+  const [packName, setPackName] = useState('');
+  const [selectedPack, setSelectedPack] = useState<string | null>(null);
+
+  const packs = useMemo(() => {
+    const grouped: Record<string, string[]> = { 'Default': [] };
+    r2Templates.forEach(id => {
+      if (id.includes('/')) {
+        const [pack, ...rest] = id.split('/');
+        if (!grouped[pack]) grouped[pack] = [];
+        grouped[pack].push(id);
+      } else {
+        grouped['Default'].push(id);
+      }
+    });
+    if (grouped['Default'].length === 0) {
+      delete grouped['Default'];
+    }
+    return grouped;
+  }, [r2Templates]);
+
+  const handleSaveToPack = async () => {
+    if (!packName) return alert('Please enter a pack name');
+    try {
+      const content = pack(query.serialize(), dataMapping)[0];
+      const templateName = prompt('Enter template name:', `template_${Date.now()}`);
+      if (!templateName) return;
+      
+      const id = `${packName}/${templateName}`;
+      await axios.post('/api/templates/save', { id, content });
+      alert('Saved successfully!');
+      loadR2Templates();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save');
+    }
+  };
 
   const loadR2Templates = async () => {
     try {
@@ -134,6 +171,38 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       }}
     >
       {!isMobile && <CloseSidebarButton onClose={onClose} />}
+      
+      {user?.role === 'admin' && (
+        <div css={{ marginBottom: 16, display: 'flex', gap: 8, flexDirection: 'column' }}>
+          <div css={{ fontSize: 14, fontWeight: 600 }}>Admin: Save to Pack</div>
+          <input 
+            type="text" 
+            placeholder="Pack Name" 
+            value={packName}
+            onChange={(e) => setPackName(e.target.value)}
+            css={{
+              padding: '8px 12px',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              fontSize: 14
+            }}
+          />
+          <button 
+            onClick={handleSaveToPack}
+            css={{
+              padding: '8px 12px',
+              background: '#3a3a4c',
+              color: '#fff',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            Save Current Design to Pack
+          </button>
+        </div>
+      )}
+
       <div
         css={{ flexDirection: 'column', overflowY: 'auto', display: 'flex' }}
       >
@@ -147,52 +216,85 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             gridGap: 8,
           }}
         >
-          {r2Templates.map((id) => (
-            <div
-              key={id}
-              css={{
-                cursor: 'pointer',
-                padding: '16px',
-                background: '#f0f0f0',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                wordBreak: 'break-all',
-                minHeight: '100px',
-              }}
-              onClick={() => loadR2Template(id)}
-            >
-              {id}
-            </div>
-          ))}
-          {templates.map((item, index) => (
-            <div
-              key={index}
-              css={{ cursor: 'pointer', position: 'relative' }}
-              onClick={() => addPages(item.data)}
-            >
-              {!!item?.img && <img src={item?.img?.url} width={item?.img?.width} height={item?.img?.height} loading='lazy' />}
-              {item.pages > 1 && (
-                <span
+          {!selectedPack ? (
+            <>
+              {Object.keys(packs).map((packName) => (
+                <div
+                  key={packName}
                   css={{
-                    position: 'absolute',
-                    bottom: 5,
-                    right: 5,
-                    backgroundColor: 'rgba(17,23,29,.6)',
-                    padding: '1px 6px',
-                    borderRadius: 6,
-                    color: '#fff',
-                    fontSize: 10,
+                    cursor: 'pointer',
+                    padding: '16px',
+                    background: '#e0e0e0',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    minHeight: '100px',
                   }}
+                  onClick={() => setSelectedPack(packName)}
                 >
-                  {item.pages}
-                </span>
-              )}
-            </div>
-          ))}
-          {isLoading && <div>{t('common.loading', 'Loading...')}</div>}
+                  {packName} ({packs[packName].length})
+                </div>
+              ))}
+              {templates.map((item, index) => (
+                <div
+                  key={index}
+                  css={{ cursor: 'pointer', position: 'relative' }}
+                  onClick={() => addPages(item.data)}
+                >
+                  {!!item?.img && <img src={item?.img?.url} width={item?.img?.width} height={item?.img?.height} loading='lazy' />}
+                  {item.pages > 1 && (
+                    <span
+                      css={{
+                        position: 'absolute',
+                        bottom: 5,
+                        right: 5,
+                        backgroundColor: 'rgba(17,23,29,.6)',
+                        padding: '1px 6px',
+                        borderRadius: 6,
+                        color: '#fff',
+                        fontSize: 10,
+                      }}
+                    >
+                      {item.pages}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <div 
+                css={{ gridColumn: '1 / -1', cursor: 'pointer', padding: '8px', background: '#f0f0f0', borderRadius: 4, textAlign: 'center', fontWeight: 'bold' }}
+                onClick={() => setSelectedPack(null)}
+              >
+                ← Back to Packs
+              </div>
+              {packs[selectedPack]?.map((id) => (
+                <div
+                  key={id}
+                  css={{
+                    cursor: 'pointer',
+                    padding: '16px',
+                    background: '#f0f0f0',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    wordBreak: 'break-all',
+                    minHeight: '100px',
+                  }}
+                  onClick={() => loadR2Template(id)}
+                >
+                  {id.split('/').pop()}
+                </div>
+              ))}
+            </>
+          )}
+          {isLoading && !selectedPack && <div>{t('common.loading', 'Loading...')}</div>}
         </div>
       </div>
     </div>
