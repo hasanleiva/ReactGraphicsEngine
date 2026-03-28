@@ -11,7 +11,7 @@ import { isGroupLayer } from 'canva-editor/utils/layer/layers';
 import { copy } from 'canva-editor/utils/menu/actions/copy';
 import { duplicate } from 'canva-editor/utils/menu/actions/duplicate';
 import { paste } from 'canva-editor/utils/menu/actions/paste';
-import axios from 'axios';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 // Icons
 import ArrowLeftIcon from 'canva-editor/icons/ArrowLeftIcon';
@@ -38,17 +38,10 @@ import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 
 const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
     const t = useTranslate();
+    const { user } = useAuth();
     const { selectedLayerIds, selectedLayers } = useSelectedLayers();
     const menuRef = useForwardedRef<HTMLDivElement>(ref);
     const [offset, setOffset] = useState<{ x: number; y: number }>({ x: -9999, y: -9999 });
-    const [user, setUser] = useState<any>(null);
-
-    useEffect(() => {
-        axios.get('/api/auth/user').then(res => {
-            setUser(res.data.user);
-        }).catch(() => {});
-    }, []);
-
     const { state, openMenu, actions, pageIndex, pageSize, rootLayer } = useEditor((state) => ({
         openMenu: state.openMenu,
         pageIndex: state.activePage,
@@ -341,7 +334,7 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                                     disabled={backwardDisabled}
                                     onClick={handleToBack}
                                 />
-                                {user?.role === 'admin' && (
+                                {user?.role !== 'user' && (
                                     <ContextMenuItem
                                         name={t('contextMenu.showLayers', 'Show Layers')}
                                         icon={<LayersIcon />}
@@ -432,3 +425,4 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
 };
 
 export default forwardRef<HTMLDivElement>(LayerContextMenu);
+

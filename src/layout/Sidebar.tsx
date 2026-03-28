@@ -6,7 +6,6 @@ import TemplateContent from './sidebar/TemplateContent';
 import FrameContent from './sidebar/FrameContent';
 import ElementsContent from './sidebar/ElementsContent';
 import { useEditor } from 'canva-editor/hooks';
-import axios from 'axios';
 
 // Icons
 import LayoutIcon from 'canva-editor/icons/LayoutIcon';
@@ -20,10 +19,11 @@ import BottomSheet from 'canva-editor/components/bottom-sheet/BottomSheet';
 import PlusIcon from 'canva-editor/icons/PlusIcon';
 import GridViewIcon from 'canva-editor/icons/GridViewIcon';
 import styled from '@emotion/styled';
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import EditorButton from 'canva-editor/components/EditorButton';
 import GithubIcon from 'canva-editor/icons/GithubIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const FABButton = styled('button')`
   position: fixed;
@@ -44,13 +44,7 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
   const { actions, state } = useEditor();
   const isMobile = useMobileDetect();
   const t = useTranslate();
-  const [user, setUser] = useState<any>(null);
-  useEffect(() => {
-    axios.get('/api/auth/user').then(res => {
-      setUser(res.data.user);
-    }).catch(() => {});
-  }, []);
-
+  const { user } = useAuth();
   const tabs = [
     {
       name: 'Template',
@@ -67,12 +61,15 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
       displayName: t('sidebar.image', 'Image'),
       icon: <ImageIcon />,
     },
-    ...(user?.role === 'user' ? [{
+  ];
+
+  if (user?.role === 'user') {
+    tabs.push({
       name: 'Elements',
       displayName: t('sidebar.elements', 'Elements'),
       icon: <ElementsIcon />,
-    }] : []),
-  ];
+    });
+  }
 
   const getSidebarComponent = (tabName: string) => {
     switch (tabName) {
@@ -112,18 +109,18 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
             }}
           />
         );
-      case 'Elements':
+      case 'Shape':
         return (
-          <ElementsContent
+          <ShapeContent
             onClose={() => {
               actions.setSidebarTab();
               actions.setSidebar();
             }}
           />
         );
-      case 'Shape':
+      case 'Elements':
         return (
-          <ShapeContent
+          <ElementsContent
             onClose={() => {
               actions.setSidebarTab();
               actions.setSidebar();

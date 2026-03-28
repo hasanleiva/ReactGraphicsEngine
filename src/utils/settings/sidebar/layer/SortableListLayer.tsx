@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { SortableContainer, SortableElement } from 'canva-editor/drag-and-drop';
 import { Layer, LayerComponentProps } from 'canva-editor/types';
 import { isGroupLayer } from 'canva-editor/utils/layer/layers';
@@ -8,6 +8,8 @@ import GroupingIcon from 'canva-editor/icons/GroupingIcon';
 import styled from 'styled-components';
 import ReverseTransformLayer from './ReverseTransformLayer';
 import { SortEnd } from 'canva-editor/drag-and-drop/types';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
+import { useEditor } from 'canva-editor/hooks';
 
 type LayerSortableType = {
   items?: Array<Layer<LayerComponentProps>> | any;
@@ -19,8 +21,6 @@ type LayerSortableType = {
     fromIndex: number;
     toIndex: number;
   }) => void;
-  isAdmin?: boolean;
-  onUpdateLayer?: (layerId: string, props: Partial<LayerComponentProps>) => void;
 };
 
 const LayerItem = styled('button')`
@@ -33,8 +33,10 @@ const LayerItem = styled('button')`
   border-width: 2px;
   border-style: solid;
   position: relative;
+  display: flex;
+  flex-direction: column;
 
-  .drag-icon: {
+  .drag-icon {
     font-size: 24px;
     width: 40px;
     height: 40px;
@@ -69,31 +71,39 @@ const SortableItem = SortableElement(
     isSelected?: number;
     onSelectLayer: () => void;
     onOpenContextMenu: (e: React.MouseEvent) => void;
-    isAdmin?: boolean;
-    onUpdateLayer?: (layerId: string, props: Partial<LayerComponentProps>) => void;
   }>(({
     item,
     isSelected,
     onSelectLayer,
     onOpenContextMenu,
-    isAdmin,
-    onUpdateLayer,
   }, ref) => {
+    const { user } = useAuth();
+    const { actions, activePage } = useEditor((state) => ({ activePage: state.activePage }));
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      actions.history.new();
+      actions.setProp(activePage, item.id, { name: e.target.value });
+    };
+
+    const handleElementTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      actions.history.new();
+      actions.setProp(activePage, item.id, { elementType: e.target.value as any });
+    };
+
     return (
-      <li ref={ref} css={{ listStyle: 'none', marginBottom: 8 }}>
-        <div css={{ display: 'flex', flexDirection: 'column' }}>
-          <LayerItem
-            key={item.id}
-            type="button"
-            css={{
-              borderColor: isSelected ? '#3d8eff' : 'transparent',
-            }}
-            onContextMenu={onOpenContextMenu}
-            onMouseDown={(e) => {
+      <li ref={ref} css={{ listStyle: 'none' }}>
+        <LayerItem
+          key={item.id}
+          type="button"
+          css={{
+            borderColor: isSelected ? '#3d8eff' : 'transparent',
+          }}
+          onContextMenu={onOpenContextMenu}
+          onMouseDown={(e) => {
             const target = e.target as HTMLElement;
             
-            // Don't interfere if clicking on drag icon - let drag handle it
-            if (target.closest('.drag-icon')) {
+            // Don't interfere if clicking on drag icon or inputs
+            if (target.closest('.drag-icon') || target.tagName === 'INPUT' || target.tagName === 'SELECT') {
               return;
             }
             
@@ -133,15 +143,13 @@ const SortableItem = SortableElement(
             // Listen for mouse movement and release
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
-            
-            // Also allow drag to start after a short delay (click and hold)
-            // The drag library will handle this via its own mousedown handler
           }}
         >
           <div
             css={{
               display: 'flex',
               alignItems: 'center',
+              width: '100%'
             }}
           >
             <div className='drag-icon'>
@@ -156,41 +164,43 @@ const SortableItem = SortableElement(
               </div>
             )}
           </div>
+          {user?.role === 'admin' && (
+            <div css={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, padding: '0 8px', width: '100%' }} onMouseDown={(e) => e.stopPropagation()}>
+              <input
+                type="text"
+                placeholder="Layer Name"
+                value={item.data.props.name || ''}
+                onChange={handleNameChange}
+                css={{
+                  padding: '4px 8px',
+                  border: '1px solid #ccc',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  width: '100%'
+                }}
+              />
+              <select
+                value={item.data.props.elementType || ''}
+                onChange={handleElementTypeChange}
+                css={{
+                  padding: '4px 8px',
+                  border: '1px solid #ccc',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  width: '100%'
+                }}
+              >
+                <option value="">Select Element Type</option>
+                <option value="input text">Input Text</option>
+                <option value="image">Image</option>
+                <option value="dropdown">Dropdown</option>
+              </select>
+            </div>
+          )}
           <div className='more-btn' onMouseDown={onOpenContextMenu}>
             <MoreHorizIcon style={{ width: 16, height: 16 }} />
           </div>
         </LayerItem>
-        {isAdmin && (
-          <div css={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 8px 8px 8px' }}>
-            <input
-              type="text"
-              placeholder="Layer Name"
-              value={item.data.props.customName || ''}
-              onChange={(e) => onUpdateLayer?.(item.id, { customName: e.target.value })}
-              css={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
-            />
-            <select
-              value={item.data.props.elementType || 'none'}
-              onChange={(e) => onUpdateLayer?.(item.id, { elementType: e.target.value as any })}
-              css={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
-            >
-              <option value="none">None</option>
-              <option value="input text">Input Text</option>
-              <option value="image">Image</option>
-              <option value="dropdown">Dropdown</option>
-            </select>
-            {item.data.props.elementType === 'dropdown' && (
-              <input
-                type="text"
-                placeholder="Dropdown JSON File Name (e.g. data.json)"
-                value={item.data.props.dropdownJson || ''}
-                onChange={(e) => onUpdateLayer?.(item.id, { dropdownJson: e.target.value })}
-                css={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
-              />
-            )}
-          </div>
-        )}
-        </div>
       </li>
     );
   })
@@ -203,8 +213,6 @@ const SortableList = SortableContainer(
       checkIsSelected,
       onOpenContextMenu,
       onSelectLayer,
-      isAdmin,
-      onUpdateLayer,
     }, ref) => {
       if (!items || !Array.isArray(items)) {
         return <ul ref={ref}></ul>;
@@ -220,8 +228,6 @@ const SortableList = SortableContainer(
               onSelectLayer={() => onSelectLayer(layer.id)}
               onOpenContextMenu={onOpenContextMenu}
               index={index}
-              isAdmin={isAdmin}
-              onUpdateLayer={onUpdateLayer}
             />
           ))}
         </ul>
@@ -236,8 +242,6 @@ const SortableListLayer: FC<LayerSortableType> = ({
   onSelectLayer,
   onOpenContextMenu,
   onChange,
-  isAdmin,
-  onUpdateLayer,
 }) => {
   return (
     <SortableList
@@ -245,8 +249,6 @@ const SortableListLayer: FC<LayerSortableType> = ({
       checkIsSelected={checkIsSelected}
       onSelectLayer={onSelectLayer}
       onOpenContextMenu={onOpenContextMenu}
-      isAdmin={isAdmin}
-      onUpdateLayer={onUpdateLayer}
       onSortEnd={(change: SortEnd) => {
         if (change?.newIndex !== change.oldIndex) {
           onChange({

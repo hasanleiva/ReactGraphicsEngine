@@ -14,9 +14,8 @@ export type LayerComponentProps = {
   transparency?: number;
   text?: string;
   image?: ImageContentProps['image'] | null;
-  customName?: string;
-  elementType?: 'input text' | 'image' | 'dropdown' | 'none';
-  dropdownJson?: string;
+  name?: string;
+  elementType?: 'input text' | 'image' | 'dropdown';
 };
 
 export type GradientStyle =

@@ -1,5 +1,4 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import axios from 'axios';
 import LayerSidebar from './sidebar/LayerSidebar';
 import SettingButton from './SettingButton';
 import Popover from 'canva-editor/components/popover/Popover';
@@ -13,16 +12,12 @@ import TransparencyIcon from 'canva-editor/icons/TransparencyIcon';
 import SettingDivider from './components/SettingDivider';
 import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const CommonSettings = () => {
   const isMobile = useMobileDetect();
   const t = useTranslate();
-  const [user, setUser] = useState<any>(null);
-  useEffect(() => {
-    axios.get('/api/auth/user').then(res => {
-      setUser(res.data.user);
-    }).catch(() => {});
-  }, []);
+  const { user } = useAuth();
   const transparencyButtonRef = useRef<HTMLDivElement>(null);
   const [openTransparencySetting, setOpenTransparencySetting] = useState(false);
   const { selectedLayers, selectedLayerIds } = useSelectedLayers();
@@ -102,7 +97,7 @@ const CommonSettings = () => {
           gridGap: 8,
         }}
       >
-        {user?.role === 'admin' && (
+        {user?.role !== 'user' && (
           <SettingButton
             css={{ minWidth: 75 }}
             onClick={() => {
