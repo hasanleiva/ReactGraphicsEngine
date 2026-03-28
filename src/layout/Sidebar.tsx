@@ -4,7 +4,9 @@ import ShapeContent from './sidebar/ShapeContent';
 import ImageContent from './sidebar/ImageContent';
 import TemplateContent from './sidebar/TemplateContent';
 import FrameContent from './sidebar/FrameContent';
+import ElementsContent from './sidebar/ElementsContent';
 import { useEditor } from 'canva-editor/hooks';
+import axios from 'axios';
 
 // Icons
 import LayoutIcon from 'canva-editor/icons/LayoutIcon';
@@ -18,7 +20,7 @@ import BottomSheet from 'canva-editor/components/bottom-sheet/BottomSheet';
 import PlusIcon from 'canva-editor/icons/PlusIcon';
 import GridViewIcon from 'canva-editor/icons/GridViewIcon';
 import styled from '@emotion/styled';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import EditorButton from 'canva-editor/components/EditorButton';
 import GithubIcon from 'canva-editor/icons/GithubIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
@@ -42,6 +44,13 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
   const { actions, state } = useEditor();
   const isMobile = useMobileDetect();
   const t = useTranslate();
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    axios.get('/api/auth/user').then(res => {
+      setUser(res.data.user);
+    }).catch(() => {});
+  }, []);
+
   const tabs = [
     {
       name: 'Template',
@@ -58,6 +67,11 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
       displayName: t('sidebar.image', 'Image'),
       icon: <ImageIcon />,
     },
+    ...(user?.role === 'user' ? [{
+      name: 'Elements',
+      displayName: t('sidebar.elements', 'Elements'),
+      icon: <ElementsIcon />,
+    }] : []),
   ];
 
   const getSidebarComponent = (tabName: string) => {
@@ -92,6 +106,15 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
       case 'Image':
         return (
           <ImageContent
+            onClose={() => {
+              actions.setSidebarTab();
+              actions.setSidebar();
+            }}
+          />
+        );
+      case 'Elements':
+        return (
+          <ElementsContent
             onClose={() => {
               actions.setSidebarTab();
               actions.setSidebar();

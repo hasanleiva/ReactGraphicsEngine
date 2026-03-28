@@ -4,7 +4,9 @@ import React, {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
+import axios from 'axios';
 import reverse from 'lodash/reverse';
 import Sidebar, { SidebarProps } from './Sidebar';
 import ReverseTransformLayer from './layer/ReverseTransformLayer';
@@ -24,6 +26,12 @@ const LayerSidebar: ForwardRefRenderFunction<
   LayerSidebarProps
 > = ({ ...props }, ref) => {
   const dataRef = useRef({ isMultipleSelect: false });
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    axios.get('/api/auth/user').then(res => {
+      setUser(res.data.user);
+    }).catch(() => {});
+  }, []);
   const { selectedLayerIds } = useSelectedLayers();
   const isMobile = useMobileDetect();
   const { layers, actions, activePage } = useEditor((state) => ({
@@ -159,6 +167,10 @@ const LayerSidebar: ForwardRefRenderFunction<
               onOpenContextMenu={handleClickOption}
               onChange={(change) => {
                 handleBringTo(change.layerId, change.fromIndex, change.toIndex);
+              }}
+              isAdmin={user?.role === 'admin'}
+              onUpdateLayer={(layerId, props) => {
+                actions.setProp(activePage, layerId, props);
               }}
             />
             {rootLayer && (

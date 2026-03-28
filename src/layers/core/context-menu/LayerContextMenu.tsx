@@ -11,6 +11,7 @@ import { isGroupLayer } from 'canva-editor/utils/layer/layers';
 import { copy } from 'canva-editor/utils/menu/actions/copy';
 import { duplicate } from 'canva-editor/utils/menu/actions/duplicate';
 import { paste } from 'canva-editor/utils/menu/actions/paste';
+import axios from 'axios';
 
 // Icons
 import ArrowLeftIcon from 'canva-editor/icons/ArrowLeftIcon';
@@ -40,6 +41,14 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
     const { selectedLayerIds, selectedLayers } = useSelectedLayers();
     const menuRef = useForwardedRef<HTMLDivElement>(ref);
     const [offset, setOffset] = useState<{ x: number; y: number }>({ x: -9999, y: -9999 });
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        axios.get('/api/auth/user').then(res => {
+            setUser(res.data.user);
+        }).catch(() => {});
+    }, []);
+
     const { state, openMenu, actions, pageIndex, pageSize, rootLayer } = useEditor((state) => ({
         openMenu: state.openMenu,
         pageIndex: state.activePage,
@@ -332,11 +341,13 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                                     disabled={backwardDisabled}
                                     onClick={handleToBack}
                                 />
-                                <ContextMenuItem
-                                    name={t('contextMenu.showLayers', 'Show Layers')}
-                                    icon={<LayersIcon />}
-                                    onClick={handleShowLayers}
-                                />
+                                {user?.role === 'admin' && (
+                                    <ContextMenuItem
+                                        name={t('contextMenu.showLayers', 'Show Layers')}
+                                        icon={<LayersIcon />}
+                                        onClick={handleShowLayers}
+                                    />
+                                )}
                             </SubMenu>
                         </ContextMenuItem>
                         <ContextMenuItem name={t('contextMenu.align', 'Align')} icon={<AlignLeftIcon />}>

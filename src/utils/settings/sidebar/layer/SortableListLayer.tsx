@@ -19,6 +19,8 @@ type LayerSortableType = {
     fromIndex: number;
     toIndex: number;
   }) => void;
+  isAdmin?: boolean;
+  onUpdateLayer?: (layerId: string, props: Partial<LayerComponentProps>) => void;
 };
 
 const LayerItem = styled('button')`
@@ -67,22 +69,27 @@ const SortableItem = SortableElement(
     isSelected?: number;
     onSelectLayer: () => void;
     onOpenContextMenu: (e: React.MouseEvent) => void;
+    isAdmin?: boolean;
+    onUpdateLayer?: (layerId: string, props: Partial<LayerComponentProps>) => void;
   }>(({
     item,
     isSelected,
     onSelectLayer,
     onOpenContextMenu,
+    isAdmin,
+    onUpdateLayer,
   }, ref) => {
     return (
-      <li ref={ref} css={{ listStyle: 'none' }}>
-        <LayerItem
-          key={item.id}
-          type="button"
-          css={{
-            borderColor: isSelected ? '#3d8eff' : 'transparent',
-          }}
-          onContextMenu={onOpenContextMenu}
-          onMouseDown={(e) => {
+      <li ref={ref} css={{ listStyle: 'none', marginBottom: 8 }}>
+        <div css={{ display: 'flex', flexDirection: 'column' }}>
+          <LayerItem
+            key={item.id}
+            type="button"
+            css={{
+              borderColor: isSelected ? '#3d8eff' : 'transparent',
+            }}
+            onContextMenu={onOpenContextMenu}
+            onMouseDown={(e) => {
             const target = e.target as HTMLElement;
             
             // Don't interfere if clicking on drag icon - let drag handle it
@@ -153,6 +160,37 @@ const SortableItem = SortableElement(
             <MoreHorizIcon style={{ width: 16, height: 16 }} />
           </div>
         </LayerItem>
+        {isAdmin && (
+          <div css={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 8px 8px 8px' }}>
+            <input
+              type="text"
+              placeholder="Layer Name"
+              value={item.data.props.customName || ''}
+              onChange={(e) => onUpdateLayer?.(item.id, { customName: e.target.value })}
+              css={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
+            />
+            <select
+              value={item.data.props.elementType || 'none'}
+              onChange={(e) => onUpdateLayer?.(item.id, { elementType: e.target.value as any })}
+              css={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
+            >
+              <option value="none">None</option>
+              <option value="input text">Input Text</option>
+              <option value="image">Image</option>
+              <option value="dropdown">Dropdown</option>
+            </select>
+            {item.data.props.elementType === 'dropdown' && (
+              <input
+                type="text"
+                placeholder="Dropdown JSON File Name (e.g. data.json)"
+                value={item.data.props.dropdownJson || ''}
+                onChange={(e) => onUpdateLayer?.(item.id, { dropdownJson: e.target.value })}
+                css={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
+              />
+            )}
+          </div>
+        )}
+        </div>
       </li>
     );
   })
@@ -165,6 +203,8 @@ const SortableList = SortableContainer(
       checkIsSelected,
       onOpenContextMenu,
       onSelectLayer,
+      isAdmin,
+      onUpdateLayer,
     }, ref) => {
       if (!items || !Array.isArray(items)) {
         return <ul ref={ref}></ul>;
@@ -180,6 +220,8 @@ const SortableList = SortableContainer(
               onSelectLayer={() => onSelectLayer(layer.id)}
               onOpenContextMenu={onOpenContextMenu}
               index={index}
+              isAdmin={isAdmin}
+              onUpdateLayer={onUpdateLayer}
             />
           ))}
         </ul>
@@ -194,6 +236,8 @@ const SortableListLayer: FC<LayerSortableType> = ({
   onSelectLayer,
   onOpenContextMenu,
   onChange,
+  isAdmin,
+  onUpdateLayer,
 }) => {
   return (
     <SortableList
@@ -201,6 +245,8 @@ const SortableListLayer: FC<LayerSortableType> = ({
       checkIsSelected={checkIsSelected}
       onSelectLayer={onSelectLayer}
       onOpenContextMenu={onOpenContextMenu}
+      isAdmin={isAdmin}
+      onUpdateLayer={onUpdateLayer}
       onSortEnd={(change: SortEnd) => {
         if (change?.newIndex !== change.oldIndex) {
           onChange({

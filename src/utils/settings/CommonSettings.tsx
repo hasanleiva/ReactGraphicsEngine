@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import axios from 'axios';
 import LayerSidebar from './sidebar/LayerSidebar';
 import SettingButton from './SettingButton';
 import Popover from 'canva-editor/components/popover/Popover';
@@ -16,6 +17,12 @@ import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 const CommonSettings = () => {
   const isMobile = useMobileDetect();
   const t = useTranslate();
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    axios.get('/api/auth/user').then(res => {
+      setUser(res.data.user);
+    }).catch(() => {});
+  }, []);
   const transparencyButtonRef = useRef<HTMLDivElement>(null);
   const [openTransparencySetting, setOpenTransparencySetting] = useState(false);
   const { selectedLayers, selectedLayerIds } = useSelectedLayers();
@@ -95,14 +102,16 @@ const CommonSettings = () => {
           gridGap: 8,
         }}
       >
-        <SettingButton
-          css={{ minWidth: 75 }}
-          onClick={() => {
-            actions.setSidebar('LAYER_MANAGEMENT');
-          }}
-        >
-          <span css={{ padding: '0 4px' }}>{t('common.position', 'Position')}</span>
-        </SettingButton>
+        {user?.role === 'admin' && (
+          <SettingButton
+            css={{ minWidth: 75 }}
+            onClick={() => {
+              actions.setSidebar('LAYER_MANAGEMENT');
+            }}
+          >
+            <span css={{ padding: '0 4px' }}>{t('common.position', 'Position')}</span>
+          </SettingButton>
+        )}
 
         {selectedLayerIds.length > 0 && !isLocked && !isPageLocked && (
           <Fragment>
