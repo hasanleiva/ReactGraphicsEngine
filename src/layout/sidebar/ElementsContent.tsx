@@ -17,16 +17,20 @@ const updateTextInHtml = (html: string, newText: string) => {
   if (!html) return newText;
   const doc = new DOMParser().parseFromString(html, 'text/html');
   
-  // Find the deepest text node and replace its content
-  const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
-  let node = walker.nextNode();
-  if (node) {
-    node.nodeValue = newText;
-    // Remove other text nodes to avoid duplicate text
-    let nextNode = walker.nextNode();
-    while (nextNode) {
-      nextNode.nodeValue = '';
-      nextNode = walker.nextNode();
+  const rootElement = doc.body.firstElementChild;
+  if (rootElement) {
+    const firstSpan = rootElement.querySelector('span');
+    if (firstSpan) {
+      firstSpan.textContent = newText;
+      // Remove other nodes to avoid leftover text
+      let nextSibling = firstSpan.nextSibling;
+      while (nextSibling) {
+        const toRemove = nextSibling;
+        nextSibling = nextSibling.nextSibling;
+        toRemove.remove();
+      }
+    } else {
+      rootElement.textContent = newText;
     }
     return doc.body.innerHTML;
   }
@@ -48,7 +52,7 @@ const CollapsibleSection: FC<{
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div css={{ marginBottom: 16 }}>
+    <div css={{ marginBottom: 16, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>
       <div
         onClick={() => setIsOpen(!isOpen)}
         css={{
@@ -56,8 +60,12 @@ const CollapsibleSection: FC<{
           alignItems: 'center',
           justifyContent: 'space-between',
           cursor: 'pointer',
-          padding: '8px 0',
+          padding: '12px 8px',
           userSelect: 'none',
+          borderRadius: 6,
+          '&:hover': {
+            backgroundColor: '#f9fafb',
+          }
         }}
       >
         <div css={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -69,16 +77,16 @@ const CollapsibleSection: FC<{
               backgroundColor: dotColor,
             }}
           />
-          <span css={{ fontSize: 12, fontWeight: 700, color: '#fff', letterSpacing: 0.5 }}>
+          <span css={{ fontSize: 12, fontWeight: 700, color: '#374151', letterSpacing: 0.5 }}>
             {title.toUpperCase()}
           </span>
         </div>
-        <div css={{ color: '#8a8a98' }}>
+        <div css={{ color: '#6b7280' }}>
           {isOpen ? <ArrowUpIcon /> : <ArrowDownIcon />}
         </div>
       </div>
       {isOpen && (
-        <div css={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div css={{ marginTop: 8, padding: '0 8px 8px 8px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {children}
         </div>
       )}
@@ -92,11 +100,11 @@ const TextInputItem: FC<{
   fontName?: string;
   onChange: (val: string) => void;
 }> = ({ label, value, fontName, onChange }) => {
-  const isMultiline = value.includes('\n');
+  const isMultiline = value.includes('\n') || value.length > 50;
 
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label css={{ fontSize: 10, fontWeight: 600, color: '#8a8a98', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <label css={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </label>
       {isMultiline ? (
@@ -105,16 +113,18 @@ const TextInputItem: FC<{
           onChange={(e) => onChange(e.target.value)}
           rows={3}
           css={{
-            padding: '8px 12px',
-            backgroundColor: '#25262b',
-            border: '1px solid #37383f',
+            padding: '10px 12px',
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #e5e7eb',
             borderRadius: 6,
-            color: '#fff',
+            color: '#111827',
             fontSize: 14,
             outline: 'none',
             resize: 'vertical',
+            transition: 'border-color 0.2s',
             '&:focus': {
-              borderColor: '#4d4e56',
+              borderColor: '#3b82f6',
+              backgroundColor: '#ffffff',
             }
           }}
         />
@@ -124,32 +134,35 @@ const TextInputItem: FC<{
           value={value}
           onChange={(e) => onChange(e.target.value)}
           css={{
-            padding: '8px 12px',
-            backgroundColor: '#25262b',
-            border: '1px solid #37383f',
+            padding: '10px 12px',
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #e5e7eb',
             borderRadius: 6,
-            color: '#fff',
+            color: '#111827',
             fontSize: 14,
             outline: 'none',
+            transition: 'border-color 0.2s',
             '&:focus': {
-              borderColor: '#4d4e56',
+              borderColor: '#3b82f6',
+              backgroundColor: '#ffffff',
             }
           }}
         />
       )}
       {fontName && (
         <div css={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          padding: '6px 10px',
-          backgroundColor: '#18191b',
-          border: '1px solid #25262b',
-          borderRadius: 6,
-          marginTop: 2,
+          padding: '4px 8px',
+          backgroundColor: '#f3f4f6',
+          border: '1px solid #e5e7eb',
+          borderRadius: 4,
+          marginTop: 4,
+          alignSelf: 'flex-start',
         }}>
-          <div css={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#8a8a98' }} />
-          <span css={{ fontSize: 11, color: '#8a8a98' }}>{fontName}</span>
+          <div css={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#9ca3af' }} />
+          <span css={{ fontSize: 11, color: '#4b5563' }}>{fontName.replace(/['"]/g, '')}</span>
         </div>
       )}
     </div>
@@ -163,7 +176,7 @@ const ImageUploadItem: FC<{
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {label && (
-        <label css={{ fontSize: 10, fontWeight: 600, color: '#8a8a98', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        <label css={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
           {label}
         </label>
       )}
@@ -173,22 +186,26 @@ const ImageUploadItem: FC<{
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '24px 16px',
-          backgroundColor: '#25262b',
-          border: '1px dashed #4d4e56',
+          padding: '32px 16px',
+          backgroundColor: '#f9fafb',
+          border: '2px dashed #d1d5db',
           borderRadius: 8,
           cursor: 'pointer',
-          transition: 'background-color 0.2s',
+          transition: 'all 0.2s',
+          textAlign: 'center',
           '&:hover': {
-            backgroundColor: '#2c2d33',
+            borderColor: '#3b82f6',
+            backgroundColor: '#eff6ff',
           }
         }}
       >
-        <ImageIcon css={{ color: '#8a8a98', marginBottom: 8 }} />
-        <span css={{ fontSize: 13, fontWeight: 600, color: '#a5b4fc', marginBottom: 4 }}>
+        <div css={{ width: 24, height: 24, color: '#9ca3af', marginBottom: 8 }}>
+          <ImageIcon />
+        </div>
+        <span css={{ fontSize: 13, fontWeight: 600, color: '#3b82f6', marginBottom: 4 }}>
           Click to upload
         </span>
-        <span css={{ fontSize: 11, color: '#8a8a98' }}>
+        <span css={{ fontSize: 11, color: '#6b7280' }}>
           PNG · JPG · WEBP
         </span>
         <input
@@ -210,35 +227,49 @@ const DropdownItemComponent: FC<{
 }> = ({ label, value, options, onChange }) => {
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label css={{ fontSize: 10, fontWeight: 600, color: '#8a8a98', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <label css={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        css={{
-          padding: '8px 12px',
-          backgroundColor: '#25262b',
-          border: '1px solid #37383f',
-          borderRadius: 6,
-          color: '#fff',
-          fontSize: 14,
-          outline: 'none',
-          appearance: 'none',
-          backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238a8a98%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'right 12px top 50%',
-          backgroundSize: '10px auto',
-          '&:focus': {
-            borderColor: '#4d4e56',
-          }
-        }}
-      >
-        <option value="">Select an option</option>
-        {options.map(opt => (
-          <option key={opt.id} value={opt.id}>{opt.text}</option>
-        ))}
-      </select>
+      <div css={{ position: 'relative' }}>
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          css={{
+            width: '100%',
+            padding: '10px 12px',
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #e5e7eb',
+            borderRadius: 6,
+            color: '#111827',
+            fontSize: 14,
+            outline: 'none',
+            appearance: 'none',
+            cursor: 'pointer',
+            transition: 'border-color 0.2s',
+            '&:focus': {
+              borderColor: '#3b82f6',
+              backgroundColor: '#ffffff',
+            }
+          }}
+        >
+          <option value="" disabled>Select an option</option>
+          {options.map(opt => (
+            <option key={opt.id} value={opt.id}>{opt.text}</option>
+          ))}
+        </select>
+        <div css={{
+          position: 'absolute',
+          right: 12,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 0,
+          height: 0,
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderTop: '5px solid #6b7280',
+          pointerEvents: 'none',
+        }} />
+      </div>
     </div>
   );
 };
@@ -313,7 +344,12 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleTextChange = (layerId: string, currentHtml: string, newText: string) => {
     actions.history.new();
     const updatedHtml = updateTextInHtml(currentHtml, newText);
-    actions.setProp(activePage, layerId, { text: updatedHtml });
+    const layer = editableLayers.find(l => l.id === layerId);
+    if (layer) {
+      const isMinified = (layer.data.props as any).v !== undefined && layer.data.props.text === undefined;
+      const propName = isMinified ? 'v' : 'text';
+      actions.setProp(activePage, layerId, { [propName]: updatedHtml });
+    }
   };
 
   const handleImageChange = (layerId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -323,12 +359,19 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       reader.onload = (event) => {
         const url = event.target?.result as string;
         actions.history.new();
-        actions.setProp(activePage, layerId, {
-          image: {
-            url,
-            thumb: url,
-          },
-        });
+        const layer = editableLayers.find(l => l.id === layerId);
+        if (layer) {
+          const isMinified = (layer.data.props as any).p !== undefined && layer.data.props.image === undefined;
+          const propName = isMinified ? 'p' : 'image';
+          const currentImage = (layer.data.props as any)[propName] || {};
+          actions.setProp(activePage, layerId, {
+            [propName]: {
+              ...currentImage,
+              url,
+              thumb: url,
+            },
+          });
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -348,10 +391,16 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       if (layer.data.type === 'Text') {
         const text = layer.data.props.text || (layer.data.props as any).v;
         const updatedHtml = updateTextInHtml(text || '', selectedItem.text);
-        actions.setProp(activePage, layer.id, { text: updatedHtml });
+        const isMinified = (layer.data.props as any).v !== undefined && layer.data.props.text === undefined;
+        const propName = isMinified ? 'v' : 'text';
+        actions.setProp(activePage, layer.id, { [propName]: updatedHtml });
       } else if (layer.data.type === 'Image') {
+        const isMinified = (layer.data.props as any).p !== undefined && layer.data.props.image === undefined;
+        const propName = isMinified ? 'p' : 'image';
+        const currentImage = (layer.data.props as any)[propName] || {};
         actions.setProp(activePage, layer.id, {
-          image: {
+          [propName]: {
+            ...currentImage,
             url: selectedItem.logo,
             thumb: selectedItem.logo,
           },
@@ -369,13 +418,14 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         display: 'flex',
         padding: '16px 20px',
         boxSizing: 'border-box',
-        backgroundColor: '#1a1a24',
-        color: '#fff',
+        backgroundColor: '#ffffff',
+        color: '#333333',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       }}
     >
-      {!isMobile && <CloseSidebarButton onClose={onClose} />}
-      <div css={{ marginBottom: 24 }}>
-        <h3 css={{ fontWeight: 'bold', margin: 0 }}>Elements</h3>
+      <div css={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+        <h3 css={{ fontWeight: 600, fontSize: 16, margin: 0, flexGrow: 1 }}>Elements</h3>
+        {!isMobile && <CloseSidebarButton onClose={onClose} />}
       </div>
 
       <div css={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', overflowX: 'hidden', flexGrow: 1 }}>
@@ -453,7 +503,7 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         })}
 
         {editableLayers.length === 0 && (
-          <p css={{ fontSize: 14, color: '#8a8a98', textAlign: 'center', marginTop: 20 }}>
+          <p css={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 20 }}>
             No editable elements found in this template.
           </p>
         )}
