@@ -363,6 +363,24 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       reader.onload = (event) => {
         const url = event.target?.result as string;
         actions.history.new();
+        
+        if (layerId === 'ROOT') {
+          const layer = layers['ROOT'];
+          if (layer) {
+            const isMinified = (layer.data.props as any).p !== undefined && layer.data.props.image === undefined;
+            const propName = isMinified ? 'p' : 'image';
+            const currentImage = (layer.data.props as any)[propName] || {};
+            actions.setProp(activePage, layerId, {
+              [propName]: {
+                ...currentImage,
+                url,
+                thumb: url,
+              },
+            });
+          }
+          return;
+        }
+
         const layer = editableLayers.find(l => l.id === layerId);
         if (layer) {
           const isMinified = (layer.data.props as any).p !== undefined && layer.data.props.image === undefined;
@@ -461,14 +479,22 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       </div>
 
       <div css={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', overflowX: 'hidden', flexGrow: 1 }}>
+        <CollapsibleSection title="Background Image" dotColor="#10b981">
+          <ImageUploadItem
+            key="ROOT"
+            label="Background Image"
+            onChange={(e) => handleImageChange('ROOT', e)}
+          />
+        </CollapsibleSection>
+
         {imageLayers.length > 0 && (
-          <CollapsibleSection title="BACKGROUND IMAGE" dotColor="#10b981">
+          <CollapsibleSection title="IMAGES" dotColor="#10b981">
             {imageLayers.map((layer) => {
               const name = layer.data.props.name || (layer.data.props as any).a;
               return (
                 <ImageUploadItem
                   key={layer.id}
-                  label={name}
+                  label={name || 'Image'}
                   onChange={(e) => handleImageChange(layer.id, e)}
                 />
               );
