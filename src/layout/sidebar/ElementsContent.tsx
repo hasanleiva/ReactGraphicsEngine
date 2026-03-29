@@ -9,8 +9,12 @@ import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 
 const extractTextFromHtml = (html: string) => {
   if (!html) return '';
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || '';
+  const withNewlines = html
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n');
+  const doc = new DOMParser().parseFromString(withNewlines, 'text/html');
+  return (doc.body.textContent || '').trim();
 };
 
 const updateTextInHtml = (html: string, newText: string) => {
@@ -21,13 +25,42 @@ const updateTextInHtml = (html: string, newText: string) => {
   if (rootElement) {
     const firstSpan = rootElement.querySelector('span');
     if (firstSpan) {
-      firstSpan.textContent = newText;
-      // Remove other nodes to avoid leftover text
-      let nextSibling = firstSpan.nextSibling;
-      while (nextSibling) {
-        const toRemove = nextSibling;
-        nextSibling = nextSibling.nextSibling;
-        toRemove.remove();
+      let blockParent = firstSpan.parentElement;
+      while (blockParent && blockParent !== rootElement && blockParent.tagName !== 'P' && blockParent.tagName !== 'DIV') {
+        blockParent = blockParent.parentElement;
+      }
+      if (!blockParent) blockParent = rootElement;
+
+      const lines = newText.split('\n');
+      
+      if (blockParent === rootElement) {
+        rootElement.innerHTML = '';
+        lines.forEach((line, index) => {
+          const newSpan = firstSpan.cloneNode(false) as HTMLElement;
+          newSpan.textContent = line;
+          rootElement.appendChild(newSpan);
+          if (index < lines.length - 1) {
+            rootElement.appendChild(doc.createElement('br'));
+          }
+        });
+      } else {
+        const parentOfBlock = blockParent.parentElement;
+        if (parentOfBlock) {
+          parentOfBlock.innerHTML = '';
+          
+          lines.forEach(line => {
+            const newBlock = blockParent!.cloneNode(true) as HTMLElement;
+            const spanInNewBlock = newBlock.querySelector('span');
+            if (spanInNewBlock) {
+              spanInNewBlock.textContent = line;
+              const allSpans = Array.from(newBlock.querySelectorAll('span'));
+              allSpans.forEach(s => {
+                if (s !== spanInNewBlock) s.remove();
+              });
+            }
+            parentOfBlock.appendChild(newBlock);
+          });
+        }
       }
     } else {
       rootElement.textContent = newText;
