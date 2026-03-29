@@ -414,6 +414,33 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     });
   };
 
+  const getOrderedLayerIds = (layerId: string): string[] => {
+    const layer = layers[layerId];
+    if (!layer) return [];
+    let ids = [layerId];
+    if (layer.data.child && Array.isArray(layer.data.child)) {
+      const children = [...layer.data.child].reverse();
+      for (const childId of children) {
+        ids = ids.concat(getOrderedLayerIds(childId));
+      }
+    }
+    return ids;
+  };
+
+  const orderedIds = layers['ROOT'] ? getOrderedLayerIds('ROOT') : [];
+
+  const dropdownGroupKeys = Object.keys(dropdownGroups).sort((a, b) => {
+    const minIndexA = Math.min(...dropdownGroups[a].map(l => {
+      const idx = orderedIds.indexOf(l.id);
+      return idx === -1 ? Infinity : idx;
+    }));
+    const minIndexB = Math.min(...dropdownGroups[b].map(l => {
+      const idx = orderedIds.indexOf(l.id);
+      return idx === -1 ? Infinity : idx;
+    }));
+    return minIndexA - minIndexB;
+  });
+
   return (
     <div
       css={{
@@ -471,42 +498,46 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           </CollapsibleSection>
         )}
 
-        {Object.entries(dropdownGroups).map(([groupKey, layersInGroup]) => {
-          const [file] = groupKey.split('::');
-          const data = dropdownDataCache[file] || [];
-          
-          // Try to find the currently selected value
-          let currentValue = '';
-          const firstTextLayer = layersInGroup.find(l => l.data.type === 'Text');
-          if (firstTextLayer) {
-             const text = firstTextLayer.data.props.text || (firstTextLayer.data.props as any).v;
-             const currentText = extractTextFromHtml(text || '');
-             const matchedItem = data.find(item => item.text === currentText);
-             if (matchedItem) currentValue = matchedItem.id;
-          } else {
-             const firstImageLayer = layersInGroup.find(l => l.data.type === 'Image');
-             if (firstImageLayer) {
-                const image = firstImageLayer.data.props.image || (firstImageLayer.data.props as any).p;
-                const currentImage = image?.url;
-                const matchedItem = data.find(item => item.logo === currentImage);
-                if (matchedItem) currentValue = matchedItem.id;
-             }
-          }
+        {dropdownGroupKeys.length > 0 && (
+          <CollapsibleSection title="DROPDOWNS" dotColor="#f59e0b">
+            {dropdownGroupKeys.map(groupKey => {
+              const layersInGroup = dropdownGroups[groupKey];
+              const [file] = groupKey.split('::');
+              const data = dropdownDataCache[file] || [];
+              
+              // Try to find the currently selected value
+              let currentValue = '';
+              const firstTextLayer = layersInGroup.find(l => l.data.type === 'Text');
+              if (firstTextLayer) {
+                 const text = firstTextLayer.data.props.text || (firstTextLayer.data.props as any).v;
+                 const currentText = extractTextFromHtml(text || '');
+                 const matchedItem = data.find(item => item.text === currentText);
+                 if (matchedItem) currentValue = matchedItem.id;
+              } else {
+                 const firstImageLayer = layersInGroup.find(l => l.data.type === 'Image');
+                 if (firstImageLayer) {
+                    const image = firstImageLayer.data.props.image || (firstImageLayer.data.props as any).p;
+                    const currentImage = image?.url;
+                    const matchedItem = data.find(item => item.logo === currentImage);
+                    if (matchedItem) currentValue = matchedItem.id;
+                 }
+              }
 
-          // Get the name of the first layer in the group to use as the dropdown label
-          const firstLayerName = layersInGroup[0]?.data.props.name || (layersInGroup[0]?.data.props as any).a || 'Dropdown';
+              // Get the name of the first layer in the group to use as the dropdown label
+              const firstLayerName = layersInGroup[0]?.data.props.name || (layersInGroup[0]?.data.props as any).a || 'Dropdown';
 
-          return (
-            <CollapsibleSection key={`dropdown-${groupKey}`} title={`DROPDOWN: ${firstLayerName}`} dotColor="#f59e0b">
-              <DropdownItemComponent
-                label={firstLayerName}
-                value={currentValue}
-                options={data}
-                onChange={(val) => handleDropdownChange(groupKey, val)}
-              />
-            </CollapsibleSection>
-          );
-        })}
+              return (
+                <DropdownItemComponent
+                  key={`dropdown-${groupKey}`}
+                  label={firstLayerName}
+                  value={currentValue}
+                  options={data}
+                  onChange={(val) => handleDropdownChange(groupKey, val)}
+                />
+              );
+            })}
+          </CollapsibleSection>
+        )}
 
         {editableLayers.length === 0 && (
           <p css={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 20 }}>
