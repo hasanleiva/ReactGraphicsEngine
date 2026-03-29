@@ -43,6 +43,8 @@ export const dataMapping: any = {
   border: 'an',
   weight: 'ao',
   roundedCorners: 'ap',
+  elementType: 'aq',
+  dropdownData: 'ar',
 };
 
 function getAlphabetCharByOrder(order: number) {

@@ -164,12 +164,16 @@ const SortableItem = SortableElement(
               </div>
             )}
           </div>
-          {user?.role === 'admin' && (
+          {user?.role === 'admin' && (() => {
+            const name = item.data.props.name || (item.data.props as any).a || '';
+            const elementType = item.data.props.elementType || (item.data.props as any).aq || '';
+            const dropdownData = item.data.props.dropdownData || (item.data.props as any).ar || '';
+            return (
             <div css={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, padding: '0 8px', width: '100%' }} onMouseDown={(e) => e.stopPropagation()}>
               <input
                 type="text"
                 placeholder="Layer Name"
-                value={item.data.props.name || ''}
+                value={name}
                 onChange={handleNameChange}
                 css={{
                   padding: '4px 8px',
@@ -180,7 +184,7 @@ const SortableItem = SortableElement(
                 }}
               />
               <select
-                value={item.data.props.elementType || ''}
+                value={elementType}
                 onChange={handleElementTypeChange}
                 css={{
                   padding: '4px 8px',
@@ -195,11 +199,11 @@ const SortableItem = SortableElement(
                 <option value="image">Image</option>
                 <option value="dropdown">Dropdown</option>
               </select>
-              {item.data.props.elementType === 'dropdown' && (
+              {elementType === 'dropdown' && (
                 <input
                   type="text"
                   placeholder="Dropdown JSON filename (e.g., data.json)"
-                  value={item.data.props.dropdownData || ''}
+                  value={dropdownData}
                   onChange={(e) => {
                     actions.history.new();
                     actions.setProp(activePage, item.id, { dropdownData: e.target.value });
@@ -214,7 +218,7 @@ const SortableItem = SortableElement(
                 />
               )}
             </div>
-          )}
+          )})()}
           <div className='more-btn' onMouseDown={onOpenContextMenu}>
             <MoreHorizIcon style={{ width: 16, height: 16 }} />
           </div>

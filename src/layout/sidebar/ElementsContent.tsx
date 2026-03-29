@@ -49,8 +49,10 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     const fetchDropdownData = async () => {
       const dropdownFiles = new Set<string>();
       Object.values(layers).forEach(layer => {
-        if (layer.data.props.elementType === 'dropdown' && layer.data.props.dropdownData) {
-          dropdownFiles.add(layer.data.props.dropdownData);
+        const elementType = layer.data.props.elementType || (layer.data.props as any).aq;
+        const dropdownData = layer.data.props.dropdownData || (layer.data.props as any).ar;
+        if (elementType === 'dropdown' && dropdownData) {
+          dropdownFiles.add(dropdownData);
         }
       });
 
@@ -72,15 +74,18 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   if (!layers) return null;
 
-  const editableLayers = Object.values(layers).filter(
-    (layer) => layer.data.props.elementType && layer.data.props.elementType !== ''
-  );
+  const editableLayers = Object.values(layers).filter((layer) => {
+    const elementType = layer.data.props.elementType || (layer.data.props as any).aq;
+    return elementType && elementType !== '';
+  });
 
   // Group dropdown layers by their dropdownData file
   const dropdownGroups: Record<string, typeof editableLayers> = {};
   editableLayers.forEach(layer => {
-    if (layer.data.props.elementType === 'dropdown' && layer.data.props.dropdownData) {
-      const file = layer.data.props.dropdownData;
+    const elementType = layer.data.props.elementType || (layer.data.props as any).aq;
+    const dropdownData = layer.data.props.dropdownData || (layer.data.props as any).ar;
+    if (elementType === 'dropdown' && dropdownData) {
+      const file = dropdownData;
       if (!dropdownGroups[file]) dropdownGroups[file] = [];
       dropdownGroups[file].push(layer);
     }
@@ -122,7 +127,8 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     // Update all layers associated with this dropdown file
     dropdownGroups[file].forEach(layer => {
       if (layer.data.type === 'Text') {
-        const updatedHtml = updateTextInHtml(layer.data.props.text || '', selectedItem.text);
+        const text = layer.data.props.text || (layer.data.props as any).v;
+        const updatedHtml = updateTextInHtml(text || '', selectedItem.text);
         actions.setProp(activePage, layer.id, { text: updatedHtml });
       } else if (layer.data.type === 'Image') {
         actions.setProp(activePage, layer.id, {
@@ -155,7 +161,10 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       <div css={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {editableLayers.map((layer) => {
           const { id } = layer;
-          const { name, elementType, text, dropdownData } = layer.data.props;
+          const name = layer.data.props.name || (layer.data.props as any).a;
+          const elementType = layer.data.props.elementType || (layer.data.props as any).aq;
+          const text = layer.data.props.text || (layer.data.props as any).v;
+          const dropdownData = layer.data.props.dropdownData || (layer.data.props as any).ar;
           const displayName = name || 'Unnamed Element';
           const plainText = extractTextFromHtml(text || '');
 
@@ -171,13 +180,15 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             let currentValue = '';
             const firstTextLayer = dropdownGroups[dropdownData].find(l => l.data.type === 'Text');
             if (firstTextLayer) {
-               const currentText = extractTextFromHtml(firstTextLayer.data.props.text || '');
+               const text = firstTextLayer.data.props.text || (firstTextLayer.data.props as any).v;
+               const currentText = extractTextFromHtml(text || '');
                const matchedItem = data.find(item => item.text === currentText);
                if (matchedItem) currentValue = matchedItem.id;
             } else {
                const firstImageLayer = dropdownGroups[dropdownData].find(l => l.data.type === 'Image');
                if (firstImageLayer) {
-                  const currentImage = firstImageLayer.data.props.image?.url;
+                  const image = firstImageLayer.data.props.image || (firstImageLayer.data.props as any).p;
+                  const currentImage = image?.url;
                   const matchedItem = data.find(item => item.logo === currentImage);
                   if (matchedItem) currentValue = matchedItem.id;
                }
