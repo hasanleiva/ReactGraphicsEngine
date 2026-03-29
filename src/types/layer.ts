@@ -16,6 +16,7 @@ export type LayerComponentProps = {
   image?: ImageContentProps['image'] | null;
   name?: string;
   elementType?: 'input text' | 'image' | 'dropdown';
+  dropdownData?: string;
 };
 
 export type GradientStyle =

@@ -195,6 +195,24 @@ const SortableItem = SortableElement(
                 <option value="image">Image</option>
                 <option value="dropdown">Dropdown</option>
               </select>
+              {item.data.props.elementType === 'dropdown' && (
+                <input
+                  type="text"
+                  placeholder="Dropdown JSON filename (e.g., data.json)"
+                  value={item.data.props.dropdownData || ''}
+                  onChange={(e) => {
+                    actions.history.new();
+                    actions.setProp(activePage, item.id, { dropdownData: e.target.value });
+                  }}
+                  css={{
+                    padding: '4px 8px',
+                    border: '1px solid #ccc',
+                    borderRadius: 4,
+                    fontSize: 12,
+                    width: '100%'
+                  }}
+                />
+              )}
             </div>
           )}
           <div className='more-btn' onMouseDown={onOpenContextMenu}>
