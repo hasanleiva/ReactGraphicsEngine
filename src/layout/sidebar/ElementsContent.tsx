@@ -336,8 +336,12 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     const dropdownData = layer.data.props.dropdownData || (layer.data.props as any).ar;
     if (elementType === 'dropdown' && dropdownData) {
       const file = dropdownData;
-      if (!dropdownGroups[file]) dropdownGroups[file] = [];
-      dropdownGroups[file].push(layer);
+      const name = layer.data.props.name || (layer.data.props as any).a || 'Dropdown';
+      // Group by both file and name so that same-named layers share a dropdown,
+      // but differently named layers get their own dropdown even if they use the same file.
+      const groupKey = `${file}::${name}`;
+      if (!dropdownGroups[groupKey]) dropdownGroups[groupKey] = [];
+      dropdownGroups[groupKey].push(layer);
     }
   });
 
@@ -377,7 +381,8 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
-  const handleDropdownChange = (file: string, selectedId: string) => {
+  const handleDropdownChange = (groupKey: string, selectedId: string) => {
+    const [file] = groupKey.split('::');
     const data = dropdownDataCache[file];
     if (!data) return;
 
@@ -386,8 +391,8 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
 
     actions.history.new();
     
-    // Update all layers associated with this dropdown file
-    dropdownGroups[file].forEach(layer => {
+    // Update all layers associated with this dropdown group
+    dropdownGroups[groupKey].forEach(layer => {
       if (layer.data.type === 'Text') {
         const text = layer.data.props.text || (layer.data.props as any).v;
         const updatedHtml = updateTextInHtml(text || '', selectedItem.text);
@@ -466,7 +471,8 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           </CollapsibleSection>
         )}
 
-        {Object.entries(dropdownGroups).map(([file, layersInGroup]) => {
+        {Object.entries(dropdownGroups).map(([groupKey, layersInGroup]) => {
+          const [file] = groupKey.split('::');
           const data = dropdownDataCache[file] || [];
           
           // Try to find the currently selected value
@@ -491,12 +497,12 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           const firstLayerName = layersInGroup[0]?.data.props.name || (layersInGroup[0]?.data.props as any).a || 'Dropdown';
 
           return (
-            <CollapsibleSection key={`dropdown-${file}`} title={`DROPDOWN: ${firstLayerName}`} dotColor="#f59e0b">
+            <CollapsibleSection key={`dropdown-${groupKey}`} title={`DROPDOWN: ${firstLayerName}`} dotColor="#f59e0b">
               <DropdownItemComponent
                 label={firstLayerName}
                 value={currentValue}
                 options={data}
-                onChange={(val) => handleDropdownChange(file, val)}
+                onChange={(val) => handleDropdownChange(groupKey, val)}
               />
             </CollapsibleSection>
           );
