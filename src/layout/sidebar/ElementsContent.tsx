@@ -299,8 +299,8 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       for (const file of dropdownFiles) {
         if (!dropdownDataCache[file]) {
           try {
-            // Assuming the JSON files are accessible via this path
-            const response = await axios.get(`https://pub-286821d3f9664551a82643725b87198e.r2.dev/${file}`);
+            const url = file.startsWith('http') ? file : `https://pub-286821d3f9664551a82643725b87198e.r2.dev/${file}`;
+            const response = await axios.get(url);
             setDropdownDataCache(prev => ({ ...prev, [file]: response.data }));
           } catch (error) {
             console.error(`Failed to fetch dropdown data from ${file}:`, error);
