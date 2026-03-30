@@ -9,65 +9,87 @@ import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
 
 const extractTextFromHtml = (html: string) => {
   if (!html) return '';
-  const withNewlines = html
-    .replace(/<br\s*[\/]?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<\/div>/gi, '\n');
-  const doc = new DOMParser().parseFromString(withNewlines, 'text/html');
-  return (doc.body.textContent || '').trim();
+  // Remove source code newlines to prevent them from becoming text content
+  const cleanHtml = html.replace(/[\r\n]+/g, '');
+  const doc = new DOMParser().parseFromString(cleanHtml, 'text/html');
+  
+  let text = '';
+  const traverse = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+      if (el.tagName === 'BR') {
+        text += '\n';
+      } else {
+        node.childNodes.forEach(traverse);
+        if (el.tagName === 'P' || el.tagName === 'DIV') {
+          text += '\n';
+        }
+      }
+    }
+  };
+  
+  doc.body.childNodes.forEach(traverse);
+  return text.replace(/\n$/, '');
 };
 
 const updateTextInHtml = (html: string, newText: string) => {
   if (!html) return newText;
   const doc = new DOMParser().parseFromString(html, 'text/html');
   
-  const rootElement = doc.body.firstElementChild;
-  if (rootElement) {
-    const firstSpan = rootElement.querySelector('span');
-    if (firstSpan) {
-      let blockParent = firstSpan.parentElement;
-      while (blockParent && blockParent !== rootElement && blockParent.tagName !== 'P' && blockParent.tagName !== 'DIV') {
-        blockParent = blockParent.parentElement;
+  const firstSpan = doc.body.querySelector('span');
+  if (!firstSpan) {
+    doc.body.innerHTML = '';
+    const lines = newText.split('\n');
+    lines.forEach((line, index) => {
+      doc.body.appendChild(doc.createTextNode(line));
+      if (index < lines.length - 1) {
+        doc.body.appendChild(doc.createElement('br'));
       }
-      if (!blockParent) blockParent = rootElement;
-
-      const lines = newText.split('\n');
-      
-      if (blockParent === rootElement) {
-        rootElement.innerHTML = '';
-        lines.forEach((line, index) => {
-          const newSpan = firstSpan.cloneNode(false) as HTMLElement;
-          newSpan.textContent = line;
-          rootElement.appendChild(newSpan);
-          if (index < lines.length - 1) {
-            rootElement.appendChild(doc.createElement('br'));
-          }
-        });
-      } else {
-        const parentOfBlock = blockParent.parentElement;
-        if (parentOfBlock) {
-          parentOfBlock.innerHTML = '';
-          
-          lines.forEach(line => {
-            const newBlock = blockParent!.cloneNode(true) as HTMLElement;
-            const spanInNewBlock = newBlock.querySelector('span');
-            if (spanInNewBlock) {
-              spanInNewBlock.textContent = line;
-              const allSpans = Array.from(newBlock.querySelectorAll('span'));
-              allSpans.forEach(s => {
-                if (s !== spanInNewBlock) s.remove();
-              });
-            }
-            parentOfBlock.appendChild(newBlock);
-          });
-        }
-      }
-    } else {
-      rootElement.textContent = newText;
-    }
+    });
     return doc.body.innerHTML;
   }
-  return newText;
+
+  let blockParent = firstSpan.parentElement;
+  while (blockParent && blockParent !== doc.body && blockParent.tagName !== 'P' && blockParent.tagName !== 'DIV') {
+    blockParent = blockParent.parentElement;
+  }
+  
+  if (!blockParent || blockParent === doc.body) {
+    doc.body.innerHTML = '';
+    const lines = newText.split('\n');
+    lines.forEach((line, index) => {
+      const newSpan = firstSpan.cloneNode(false) as HTMLElement;
+      newSpan.textContent = line;
+      doc.body.appendChild(newSpan);
+      if (index < lines.length - 1) {
+        doc.body.appendChild(doc.createElement('br'));
+      }
+    });
+    return doc.body.innerHTML;
+  }
+
+  const container = blockParent.parentElement || doc.body;
+  container.innerHTML = '';
+  
+  const lines = newText.split('\n');
+  lines.forEach(line => {
+    const newBlock = blockParent!.cloneNode(true) as HTMLElement;
+    const spanInNewBlock = newBlock.querySelector('span');
+    if (spanInNewBlock) {
+      spanInNewBlock.textContent = line;
+      const allSpans = Array.from(newBlock.querySelectorAll('span'));
+      allSpans.forEach(s => {
+        if (s !== spanInNewBlock) s.remove();
+      });
+      const allBrs = Array.from(newBlock.querySelectorAll('br'));
+      allBrs.forEach(br => br.remove());
+    }
+    container.appendChild(newBlock);
+  });
+  
+  return doc.body.innerHTML;
 };
 
 interface DropdownItem {
