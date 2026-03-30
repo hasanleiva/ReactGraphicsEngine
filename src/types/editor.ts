@@ -93,6 +93,7 @@ export interface EditorState {
   githubLink: string;
   gumroadLink: string;
   isAdjustingSlider: boolean;
+  isZoomLocked: boolean;
 }
 
 export type CoreEditorActions = ReturnType<typeof ActionMethods>;

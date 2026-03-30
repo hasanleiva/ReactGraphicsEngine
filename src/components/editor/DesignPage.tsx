@@ -113,6 +113,9 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
   });
   const openContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (isLocked) {
+      return;
+    }
     if (hoveredLayer && hoveredLayer.data.locked) {
       return;
     }

@@ -192,6 +192,9 @@ export const ActionMethods = (state: EditorState) => {
     setScale: (scale: number) => {
       state.scale = scale;
     },
+    setZoomLocked: (locked: boolean) => {
+      state.isZoomLocked = locked;
+    },
     setGuideline: ({
       vertical,
       horizontal,

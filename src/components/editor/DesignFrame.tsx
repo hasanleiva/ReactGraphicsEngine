@@ -34,6 +34,7 @@ import { domToPng } from 'modern-screenshot'
 import { slugify } from 'canva-editor/utils/slugify';
 import { jsPDF } from "jspdf";
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 interface DesignFrameProps {
   data: any;
@@ -41,6 +42,7 @@ interface DesignFrameProps {
 }
 const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
   const t = useTranslate();
+  const { user } = useAuth();
   const shiftKeyRef = useTrackingShiftKey();
   const frameRef = useRef<HTMLDivElement>(null);
   const pageContainerRef = useRef<HTMLDivElement>(null);
@@ -110,14 +112,30 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
     const serializedData: SerializedPage[] = unpack(data);
     actions.setData(serializedData);
 
+    if (user?.role === 'user') {
+      serializedData.forEach((_, idx) => {
+        actions.lockPage(idx);
+      });
+      actions.setZoomLocked(true);
+    }
+
     setTimeout(() => {
       const maxInitScale = 0.5;
       const initScale =
         ((frameRef?.current?.offsetWidth || 0) - (isMobile ? 32 : 112)) /
         pageSize.width; // Padding 16x2
-      actions.setScale(initScale > maxInitScale ? maxInitScale : initScale);
+      
+      if (user?.role === 'user') {
+        const fitScale = Math.min(
+          ((frameRef?.current?.offsetWidth || 0) - 32) / pageSize.width,
+          ((frameRef?.current?.offsetHeight || 0) - 32) / pageSize.height
+        );
+        actions.setScale(fitScale);
+      } else {
+        actions.setScale(initScale > maxInitScale ? maxInitScale : initScale);
+      }
     }, 16);
-  }, [data, actions]);
+  }, [data, actions, user?.role]);
 
   useEffect(() => {
     if (downloadPNGCmd === -1) return;

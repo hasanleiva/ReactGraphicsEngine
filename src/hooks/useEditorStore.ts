@@ -29,6 +29,7 @@ const ignoreHistoryForActions: string[] = [
   'selectLayers',
   'setControlBox',
   'setScale',
+  'setZoomLocked',
   'setEditing',
   'selectAllLayers',
   'resetSelectLayer',
@@ -241,6 +242,7 @@ export const useEditorStore = () => {
     gumroadLink: 'https://kenvinlu.gumroad.com/l/canva-editor',
     isAdjustingSlider: false,
     saving: false,
+    isZoomLocked: false,
   });
 
   const actions = useMemo<EditorActions>(() => {

@@ -61,6 +61,7 @@ export const useZoomPage = (
     openImageEditor,
     openTextEditor,
     pageLength,
+    isZoomLocked,
   } = useEditor((state) => {
     return {
       scale: state.scale,
@@ -72,16 +73,19 @@ export const useZoomPage = (
       openImageEditor: !!state.imageEditor,
       openTextEditor: !!state.textEditor,
       pageLength: state.pages.length,
+      isZoomLocked: state.isZoomLocked,
     };
   });
 
   const pageZoomStart = useCallback(() => {
+    if (isZoomLocked) return;
     transformRef.current.isZoom = true;
     transformRef.current.isMoving = false;
-  }, []);
+  }, [isZoomLocked]);
 
   const pageZoomMove = useCallback(
     (change: number) => {
+      if (isZoomLocked) return;
       if (
         frameRef.current &&
         transformRef.current.isZoom &&
@@ -114,6 +118,7 @@ export const useZoomPage = (
 
   const pageZoomEnd = useCallback(
     (change: number) => {
+      if (isZoomLocked) return;
       if (
         frameRef.current &&
         transformRef.current.isZoom &&
@@ -426,7 +431,7 @@ export const useZoomPage = (
     return () => {
       document.removeEventListener('gesturestart', handleGestureStart);
     };
-  }, [scale, pageTransform, setPageTransform, actions]);
+  }, [scale, pageTransform, setPageTransform, actions, pageZoomStart, pageZoomMove, pageZoomEnd]);
 
   return {
     pageTransform,

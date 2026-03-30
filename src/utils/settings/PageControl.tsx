@@ -7,23 +7,30 @@ import GridViewIcon from 'canva-editor/icons/GridViewIcon';
 import CheckIcon from 'canva-editor/icons/CheckIcon';
 import EditorButton from 'canva-editor/components/EditorButton';
 import NotesIcon from 'canva-editor/icons/NotesIcon';
+import LockIcon from 'canva-editor/icons/LockIcon';
+import LockOpenIcon from 'canva-editor/icons/LockOpenIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const PageControl = () => {
   const t = useTranslate();
+  const { user } = useAuth();
   const labelScaleOptionRef = useRef<HTMLDivElement>(null);
   const [openScaleOptions, setOpenScaleOptions] = useState(false);
-  const { actions, activePage, totalPages, scale, isOpenPageSettings, isOpenNotes } =
+  const { actions, activePage, totalPages, scale, isOpenPageSettings, isOpenNotes, isZoomLocked } =
     useEditor((state) => ({
       activePage: state.activePage,
       totalPages: state.pages.length,
       scale: state.scale,
       isOpenPageSettings: state.openPageSettings,
-      isOpenNotes: state.sideBarTab === 'Notes'
+      isOpenNotes: state.sideBarTab === 'Notes',
+      isZoomLocked: state.isZoomLocked
     }));
 
   const handleChangeScale = (value: number) => {
-    actions.setScale(value / 100);
+    if (!isZoomLocked) {
+      actions.setScale(value / 100);
+    }
   };
   return (
     <div
@@ -74,14 +81,18 @@ const PageControl = () => {
             value={scale * 100}
             min={10}
             max={500}
-            disabled={isOpenPageSettings}
+            disabled={isOpenPageSettings || isZoomLocked}
             onChange={handleChangeScale}
           />
         </div>
         <SettingButton
           ref={labelScaleOptionRef}
           tooltip={t('common.zoom', 'Zoom')}
-          onClick={() => setOpenScaleOptions(true)}
+          onClick={() => {
+            if (!isZoomLocked) {
+              setOpenScaleOptions(true);
+            }
+          }}
         >
           <div css={{ width: 48, textAlign: 'center' }}>
             {Math.round(scale * 100)}%
@@ -122,6 +133,17 @@ const PageControl = () => {
             ))}
           </div>
         </Popover>
+        {user?.role === 'user' && (
+          <EditorButton
+            isActive={isZoomLocked}
+            tooltip={isZoomLocked ? 'Unlock Zoom' : 'Lock Zoom'}
+            onClick={() => {
+              actions.setZoomLocked(!isZoomLocked);
+            }}
+          >
+            {isZoomLocked ? <LockIcon /> : <LockOpenIcon />}
+          </EditorButton>
+        )}
         <EditorButton
           isActive={isOpenPageSettings}
           tooltip='Grid view'
