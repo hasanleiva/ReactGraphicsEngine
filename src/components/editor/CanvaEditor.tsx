@@ -45,6 +45,12 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
   const isPreview = searchQueryParam('preview');
 
   useEffect(() => {
+    if (userRole) {
+      actions.setUserRole(userRole);
+    }
+  }, [userRole, actions]);
+
+  useEffect(() => {
     const windowHeight = () => {
       setViewPortHeight(window.innerHeight);
     };
@@ -104,7 +110,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
             <div
               ref={leftSidebarRef}
               css={{
-                display: userRole === 'user' ? 'none' : 'flex',
+                display: 'flex',
                 margin: 6,
               }}
             >
@@ -121,7 +127,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
               }}
             >
               <AppLayerSettings />
-              <EditorContent data={data?.editorConfig} onChanges={onChanges} />
+              <EditorContent data={data?.editorConfig} onChanges={onChanges} userRole={userRole} />
               <div
                 css={{
                   height: 40,

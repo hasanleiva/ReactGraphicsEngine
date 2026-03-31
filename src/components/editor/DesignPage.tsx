@@ -8,7 +8,6 @@ import React, {
 import PageElement from 'canva-editor/layers/core/PageElement';
 import { useEditor, useSelectedLayers } from '../../hooks';
 import { useLinkedRef } from '../../hooks/useLinkedRef';
-import { useAuth } from '../../contexts/AuthContext';
 import {
   BoxData,
   LayerComponentProps,
@@ -80,7 +79,6 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
     {}
   );
   const { selectedLayerIds, selectedLayers } = useSelectedLayers();
-  const { user } = useAuth();
   const disabled = useDisabledFeatures();
   const t = useTranslate();
   const {
@@ -94,6 +92,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
     totalPages,
     isLocked,
     isAdjustingSlider,
+    userRole,
   } = useEditor((state) => {
     const hoverLayerId = state.hoveredLayer[pageIndex];
     return {
@@ -111,11 +110,12 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
       imageEditor: state.imageEditor,
       textEditor: state.textEditor,
       totalPages: state.pages.length,
+      userRole: state.userRole,
     };
   });
   const openContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (hoveredLayer && hoveredLayer.data.locked && hoveredLayer.id !== 'ROOT') {
+    if (hoveredLayer && hoveredLayer.data.locked) {
       return;
     }
     if (controlBox && pageRef.current && hoveredLayer) {
@@ -361,7 +361,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
           >
             <ArrowDownIcon />
           </div>
-          {user?.role !== 'user' && (
+          {userRole !== 'user' && (
             <div
               css={{
                 marginLeft: 8,
@@ -386,7 +386,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               {isLocked && <LockIcon />}
             </div>
           )}
-          {user?.role !== 'user' && (
+          {userRole !== 'user' && (
             <div
               css={{
                 marginLeft: 8,
@@ -406,7 +406,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               <DuplicateIcon />
             </div>
           )}
-          {user?.role !== 'user' && (
+          {userRole !== 'user' && (
             <div
               css={{
                 marginLeft: 8,
@@ -433,7 +433,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               <TrashIcon />
             </div>
           )}
-          {user?.role !== 'user' && (
+          {userRole !== 'user' && (
             <div
               css={{
                 marginLeft: 8,
