@@ -38,8 +38,9 @@ import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 interface DesignFrameProps {
   data: any;
   onChanges?: (changes: any) => void;
+  userRole?: string;
 }
-const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
+const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges, userRole }) => {
   const t = useTranslate();
   const shiftKeyRef = useTrackingShiftKey();
   const frameRef = useRef<HTMLDivElement>(null);
@@ -109,14 +110,6 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
   useEffect(() => {
     const serializedData: SerializedPage[] = unpack(data);
     actions.setData(serializedData);
-
-    setTimeout(() => {
-      const maxInitScale = 0.5;
-      const initScale =
-        ((frameRef?.current?.offsetWidth || 0) - (isMobile ? 32 : 112)) /
-        pageSize.width; // Padding 16x2
-      actions.setScale(initScale > maxInitScale ? maxInitScale : initScale);
-    }, 16);
   }, [data, actions]);
 
   useEffect(() => {
@@ -527,31 +520,33 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
                     />
                   </div>
                 ))}
-                <button
-                  css={{
-                    alignItems: 'center',
-                    justifyItems: 'center',
-                    marginTop: 20,
-                    marginBottom: 20,
-                    border: '1px solid rgba(64,87,109,.1)',
-                    color: '#0d1216',
-                    width: pageSize.width * scale,
-                    height: 40,
-                    textAlign: 'center',
-                    padding: '0 2px',
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    '@media (max-width: 900px)': {
-                      display: 'none',
-                    },
-                  }}
-                  onClick={() => {
-                    actions.addPage();
-                    handleScrollToActivePage(activePage + 1);
-                  }}
-                >
-                  + {t('common.addPage', 'Add Page')}
-                </button>
+                {userRole !== 'user' && (
+                  <button
+                    css={{
+                      alignItems: 'center',
+                      justifyItems: 'center',
+                      marginTop: 20,
+                      marginBottom: 20,
+                      border: '1px solid rgba(64,87,109,.1)',
+                      color: '#0d1216',
+                      width: pageSize.width * scale,
+                      height: 40,
+                      textAlign: 'center',
+                      padding: '0 2px',
+                      fontWeight: 600,
+                      borderRadius: 3,
+                      '@media (max-width: 900px)': {
+                        display: 'none',
+                      },
+                    }}
+                    onClick={() => {
+                      actions.addPage();
+                      handleScrollToActivePage(activePage + 1);
+                    }}
+                  >
+                    + {t('common.addPage', 'Add Page')}
+                  </button>
+                )}
               </div>
               <div
                 css={{

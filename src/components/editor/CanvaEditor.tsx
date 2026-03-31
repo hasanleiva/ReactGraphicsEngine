@@ -26,6 +26,7 @@ export type EditorProps = {
   onChanges: (changes: any) => void;
   onDesignNameChanges: (name: any) => void;
   onRemove: () => void;
+  userRole?: string;
 };
 
 const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
@@ -35,6 +36,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
   onChanges,
   onDesignNameChanges,
   onRemove,
+  userRole,
 }) => {
   const version = '1.0.69';
   const { getState, actions, query } = useEditorStore();
@@ -102,7 +104,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
             <div
               ref={leftSidebarRef}
               css={{
-                display: 'flex',
+                display: userRole === 'user' ? 'none' : 'flex',
                 margin: 6,
               }}
             >
