@@ -92,6 +92,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
     totalPages,
     isLocked,
     isAdjustingSlider,
+    userRole,
   } = useEditor((state) => {
     const hoverLayerId = state.hoveredLayer[pageIndex];
     return {
