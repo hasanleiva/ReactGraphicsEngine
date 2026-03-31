@@ -34,15 +34,14 @@ import { domToPng } from 'modern-screenshot'
 import { slugify } from 'canva-editor/utils/slugify';
 import { jsPDF } from "jspdf";
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
-import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 interface DesignFrameProps {
   data: any;
   onChanges?: (changes: any) => void;
+  userRole?: string;
 }
-const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
+const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges, userRole }) => {
   const t = useTranslate();
-  const { user } = useAuth();
   const shiftKeyRef = useTrackingShiftKey();
   const frameRef = useRef<HTMLDivElement>(null);
   const pageContainerRef = useRef<HTMLDivElement>(null);
@@ -112,28 +111,26 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
     const serializedData: SerializedPage[] = unpack(data);
     actions.setData(serializedData);
 
-    if (user?.role === 'user') {
+    if (userRole === 'user') {
       serializedData.forEach((_, idx) => {
         actions.lockPage(idx);
       });
-      actions.setZoomLocked(true);
-    } else {
-      actions.setZoomLocked(false);
     }
 
     setTimeout(() => {
-      const maxInitScale = 0.5;
-      const initScale =
-        ((frameRef?.current?.offsetWidth || 0) - (isMobile ? 32 : 112)) /
-        pageSize.width; // Padding 16x2
-      
-      if (user?.role === 'user') {
-        actions.setScale(0.11);
+      let initScale;
+      if (userRole === 'user') {
+        initScale = 0.11;
       } else {
-        actions.setScale(initScale > maxInitScale ? maxInitScale : initScale);
+        const maxInitScale = 0.5;
+        initScale =
+          ((frameRef?.current?.offsetWidth || 0) - (isMobile ? 32 : 112)) /
+          pageSize.width; // Padding 16x2
+        if (initScale > maxInitScale) initScale = maxInitScale;
       }
+      actions.setScale(initScale);
     }, 16);
-  }, [data, actions, user?.role]);
+  }, [data, actions, userRole]);
 
   useEffect(() => {
     if (downloadPNGCmd === -1) return;

@@ -121,7 +121,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
               }}
             >
               <AppLayerSettings />
-              <EditorContent data={data?.editorConfig} onChanges={onChanges} />
+              <EditorContent data={data?.editorConfig} onChanges={onChanges} userRole={userRole} />
               <div
                 css={{
                   height: 40,
