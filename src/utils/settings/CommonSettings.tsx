@@ -144,7 +144,7 @@ const CommonSettings = () => {
           </Fragment>
         )}
 
-        {selectedLayerIds.length > 0 && !isPageLocked && (
+        {selectedLayerIds.length > 0 && (
           <>
             <SettingDivider />
             <SettingButton
