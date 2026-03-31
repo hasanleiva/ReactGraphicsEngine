@@ -520,31 +520,33 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges, userRole }) => {
                     />
                   </div>
                 ))}
-                <button
-                  css={{
-                    alignItems: 'center',
-                    justifyItems: 'center',
-                    marginTop: 20,
-                    marginBottom: 20,
-                    border: '1px solid rgba(64,87,109,.1)',
-                    color: '#0d1216',
-                    width: pageSize.width * scale,
-                    height: 40,
-                    textAlign: 'center',
-                    padding: '0 2px',
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    '@media (max-width: 900px)': {
-                      display: 'none',
-                    },
-                  }}
-                  onClick={() => {
-                    actions.addPage();
-                    handleScrollToActivePage(activePage + 1);
-                  }}
-                >
-                  + {t('common.addPage', 'Add Page')}
-                </button>
+                {userRole !== 'user' && (
+                  <button
+                    css={{
+                      alignItems: 'center',
+                      justifyItems: 'center',
+                      marginTop: 20,
+                      marginBottom: 20,
+                      border: '1px solid rgba(64,87,109,.1)',
+                      color: '#0d1216',
+                      width: pageSize.width * scale,
+                      height: 40,
+                      textAlign: 'center',
+                      padding: '0 2px',
+                      fontWeight: 600,
+                      borderRadius: 3,
+                      '@media (max-width: 900px)': {
+                        display: 'none',
+                      },
+                    }}
+                    onClick={() => {
+                      actions.addPage();
+                      handleScrollToActivePage(activePage + 1);
+                    }}
+                  >
+                    + {t('common.addPage', 'Add Page')}
+                  </button>
+                )}
               </div>
               <div
                 css={{

@@ -131,8 +131,23 @@ export const ActionMethods = (state: EditorState) => {
         ids.push(layerId);
       }
       ids.forEach((id) => {
-        if (state.userRole === 'user' && (state.pages[pageIndex].layers[id].data.locked || state.pages[pageIndex].layers.ROOT.data.locked)) {
-          return;
+        const layer = state.pages[pageIndex]?.layers[id];
+        if (!layer) return;
+
+        if (state.userRole === 'user') {
+          const isPageLocked = state.pages[pageIndex].layers.ROOT.data.locked;
+          const isLayerLocked = layer.data.locked;
+
+          if (isPageLocked || isLayerLocked) {
+            const isEditable =
+              layer.data.props.elementType || (layer.data.props as any).aq;
+            const restrictedKeys = ['position', 'boxSize', 'rotate', 'scale'];
+            const isUpdatingTransform = Object.keys(props).some((key) =>
+              restrictedKeys.includes(key)
+            );
+
+            if (!isEditable || isUpdatingTransform) return;
+          }
         }
         state.pages[pageIndex].layers[id].data.props = mergeWithoutArray(
           state.pages[pageIndex].layers[id].data.props,
@@ -569,9 +584,11 @@ export const ActionMethods = (state: EditorState) => {
       state.textEditor = undefined;
     },
     lockPage: (pageIndex: number) => {
+      if (state.userRole === 'user') return;
       state.pages[pageIndex].layers.ROOT.data.locked = true;
     },
     unlockPage: (pageIndex: number) => {
+      if (state.userRole === 'user') return;
       state.pages[pageIndex].layers.ROOT.data.locked = false;
     },
     deletePage: (pageIndex: number) => {
