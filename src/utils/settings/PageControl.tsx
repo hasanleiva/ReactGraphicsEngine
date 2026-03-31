@@ -63,6 +63,7 @@ const PageControl = () => {
         }}
       >
         <EditorButton
+          disabled={userRole === 'user'}
           tooltip={isLocked ? t('common.unlock', 'Unlock') : t('common.lock', 'Lock')}
           onClick={() => {
             if (isLocked) {

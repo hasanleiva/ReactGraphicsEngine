@@ -66,6 +66,7 @@ export const ActionMethods = (state: EditorState) => {
         id: newId,
         data: deserializeLayer({
           ...serializedLayer,
+          locked: state.userRole === 'user',
           parent: parentId,
           child: [],
         }),
@@ -127,6 +128,9 @@ export const ActionMethods = (state: EditorState) => {
         ids.push(layerId);
       }
       ids.forEach((id) => {
+        if (state.userRole === 'user' && state.pages[pageIndex].layers[id].data.locked) {
+          return;
+        }
         state.pages[pageIndex].layers[id].data.props = mergeWithoutArray(
           state.pages[pageIndex].layers[id].data.props,
           props,
@@ -137,6 +141,9 @@ export const ActionMethods = (state: EditorState) => {
     moveSelectedLayers: (direction: EdgeDirection, value: number) => {
       state.controlBox = undefined;
       state.selectedLayers[state.activePage].forEach((layerId) => {
+        if (state.userRole === 'user' && state.pages[state.activePage].layers[layerId].data.locked) {
+          return;
+        }
         if (direction === 'right') {
           state.pages[state.activePage].layers[layerId].data.props.position.x +=
             value;
@@ -415,9 +422,9 @@ export const ActionMethods = (state: EditorState) => {
         };
 
         page.layers.ROOT = decodeLayer(serializedPage.layers.ROOT, null);
-        if (state.userRole === 'user') {
-          page.layers.ROOT.data.locked = true;
-        }
+        // ROOT is the background, keep it unlocked for all roles to allow background editing
+        page.layers.ROOT.data.locked = false;
+
         const deserializeChild = (layerId: LayerId, newLayerId: LayerId) => {
           const res: [LayerId, Layer<LayerComponentProps>][] = [];
           serializedPage.layers[layerId].child.forEach((childId) => {
@@ -425,6 +432,10 @@ export const ActionMethods = (state: EditorState) => {
               serializedPage.layers[childId],
               newLayerId
             );
+            // Lock all children for 'user' role
+            if (state.userRole === 'user') {
+              childLayer.data.locked = true;
+            }
             res.push([childLayer.id, childLayer]);
             page.layers[childLayer.id] = childLayer;
             page.layers[newLayerId].data.child.push(childLayer.id);
@@ -511,10 +522,16 @@ export const ActionMethods = (state: EditorState) => {
       } else {
         ids.push(layerId);
       }
+      const filteredIds = ids.filter(id => {
+        const layer = state.pages[pageIndex].layers[id];
+        return !layer?.data.locked || state.userRole !== 'user';
+      });
+      if (filteredIds.length === 0) return;
+
       state.selectedLayers[pageIndex] = state.selectedLayers[pageIndex].filter(
-        (id) => !ids.includes(id)
+        (id) => !filteredIds.includes(id)
       );
-      ids.forEach((id) => {
+      filteredIds.forEach((id) => {
         const parentId = state.pages[pageIndex].layers[id].data.parent;
         delete state.pages[pageIndex].layers[id];
         if (parentId && state.pages[pageIndex].layers[parentId]) {
@@ -573,15 +590,21 @@ export const ActionMethods = (state: EditorState) => {
       Object.entries(
         cloneDeep(serializeLayers(state.pages[pageIndex].layers, 'ROOT'))
       ).map(([layerId, layer]) => {
+        const dl = deserializeLayer(layer);
+        // Lock all layers except ROOT for 'user' role
+        if (state.userRole === 'user' && layerId !== 'ROOT') {
+          dl.locked = true;
+        }
+        // Ensure ROOT is unlocked
+        if (layerId === 'ROOT') {
+          dl.locked = false;
+        }
         newPage.layers[layerId] = {
           id: layerId,
-          data: deserializeLayer(layer),
+          data: dl,
         };
       });
       state.pages.splice(pageIndex, 0, newPage);
-      if (state.userRole === 'user') {
-        state.pages[pageIndex].layers.ROOT.data.locked = true;
-      }
       state.activePage = pageIndex + 1;
       state.selectedLayers = {
         [pageIndex + 1]: ['ROOT'],
@@ -612,7 +635,7 @@ export const ActionMethods = (state: EditorState) => {
             color: '#fff',
             image: null,
           },
-          locked: state.userRole === 'user',
+          locked: false, // ROOT is background, keep it unlocked
           parent: null,
           child: [],
         }),
@@ -891,7 +914,7 @@ export const ActionMethods = (state: EditorState) => {
       const layerId = getRandomId();
       const dl = deserializeLayer({
         ...serializedLayer,
-        locked: false,
+        locked: state.userRole === 'user',
         parent: parentId,
         child: [],
       });
@@ -915,7 +938,7 @@ export const ActionMethods = (state: EditorState) => {
       const layerId = getRandomId();
       const dl = deserializeLayer({
         ...serializedLayer,
-        locked: false,
+        locked: state.userRole === 'user',
         parent: parentId,
         child: [],
       });
@@ -960,7 +983,7 @@ export const ActionMethods = (state: EditorState) => {
       const layerId = getRandomId();
       const dl = deserializeLayer({
         ...serializedLayer,
-        locked: false,
+        locked: state.userRole === 'user',
         parent: parentId,
         child: [],
       });
@@ -1027,7 +1050,7 @@ export const ActionMethods = (state: EditorState) => {
           },
           rotate: 0,
         },
-        locked: false,
+        locked: state.userRole === 'user',
         parent: parentId,
         child: [],
       });
