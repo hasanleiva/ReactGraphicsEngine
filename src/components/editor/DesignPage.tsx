@@ -92,7 +92,6 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
     totalPages,
     isLocked,
     isAdjustingSlider,
-    userRole,
   } = useEditor((state) => {
     const hoverLayerId = state.hoveredLayer[pageIndex];
     return {
@@ -110,7 +109,6 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
       imageEditor: state.imageEditor,
       textEditor: state.textEditor,
       totalPages: state.pages.length,
-      userRole: state.userRole,
     };
   });
   const openContextMenu = (e: React.MouseEvent) => {
@@ -361,98 +359,90 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
           >
             <ArrowDownIcon />
           </div>
-          {userRole !== 'user' && (
-            <div
-              css={{
-                marginLeft: 8,
-                width: 28,
-                height: 28,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-                cursor: 'pointer',
-                ':hover': {
-                  background: 'rgba(64, 87, 109, 0.07)',
-                },
-              }}
-              onClick={() => {
-                isLocked
-                  ? actions.unlockPage(pageIndex)
-                  : actions.lockPage(pageIndex);
-              }}
-            >
-              {!isLocked && <LockOpenIcon />}
-              {isLocked && <LockIcon />}
-            </div>
-          )}
-          {userRole !== 'user' && (
-            <div
-              css={{
-                marginLeft: 8,
-                width: 28,
-                height: 28,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-                cursor: 'pointer',
-                ':hover': {
-                  background: 'rgba(64, 87, 109, 0.07)',
-                },
-              }}
-              onClick={() => actions.duplicatePage(pageIndex)}
-            >
-              <DuplicateIcon />
-            </div>
-          )}
-          {userRole !== 'user' && (
-            <div
-              css={{
-                marginLeft: 8,
-                width: 28,
-                height: 28,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-                cursor: isLocked || totalPages <= 1 ? 'not-allowed' : 'pointer',
-                color:
-                  isLocked || totalPages <= 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
-                ':hover': {
-                  background:
-                    isLocked || totalPages <= 1
-                      ? undefined
-                      : 'rgba(64, 87, 109, 0.07)',
-                },
-              }}
-              onClick={() =>
-                !isLocked && totalPages > 1 && actions.deletePage(pageIndex)
-              }
-            >
-              <TrashIcon />
-            </div>
-          )}
-          {userRole !== 'user' && (
-            <div
-              css={{
-                marginLeft: 8,
-                width: 28,
-                height: 28,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-                cursor: 'pointer',
-                ':hover': {
-                  background: 'rgba(64, 87, 109, 0.07)',
-                },
-              }}
-              onClick={() => actions.addPage(pageIndex)}
-            >
-              <AddNewPageIcon />
-            </div>
-          )}
+          <div
+            css={{
+              marginLeft: 8,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 4,
+              cursor: 'pointer',
+              ':hover': {
+                background: 'rgba(64, 87, 109, 0.07)',
+              },
+            }}
+            onClick={() => {
+              isLocked
+                ? actions.unlockPage(pageIndex)
+                : actions.lockPage(pageIndex);
+            }}
+          >
+            {!isLocked && <LockOpenIcon />}
+            {isLocked && <LockIcon />}
+          </div>
+          <div
+            css={{
+              marginLeft: 8,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 4,
+              cursor: 'pointer',
+              ':hover': {
+                background: 'rgba(64, 87, 109, 0.07)',
+              },
+            }}
+            onClick={() => actions.duplicatePage(pageIndex)}
+          >
+            <DuplicateIcon />
+          </div>
+          <div
+            css={{
+              marginLeft: 8,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 4,
+              cursor: isLocked || totalPages <= 1 ? 'not-allowed' : 'pointer',
+              color:
+                isLocked || totalPages <= 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
+              ':hover': {
+                background:
+                  isLocked || totalPages <= 1
+                    ? undefined
+                    : 'rgba(64, 87, 109, 0.07)',
+              },
+            }}
+            onClick={() =>
+              !isLocked && totalPages > 1 && actions.deletePage(pageIndex)
+            }
+          >
+            <TrashIcon />
+          </div>
+          <div
+            css={{
+              marginLeft: 8,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 4,
+              cursor: 'pointer',
+              ':hover': {
+                background: 'rgba(64, 87, 109, 0.07)',
+              },
+            }}
+            onClick={() => actions.addPage(pageIndex)}
+          >
+            <AddNewPageIcon />
+          </div>
         </div>
       </div>
       <div

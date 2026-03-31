@@ -580,7 +580,7 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         )}
 
         {dropdownGroupKeys.length > 0 && (
-          <CollapsibleSection title="Dropdown" dotColor="#f59e0b">
+          <CollapsibleSection title="DROPDOWNS" dotColor="#f59e0b">
             {dropdownGroupKeys.map(groupKey => {
               const layersInGroup = dropdownGroups[groupKey];
               const [file] = groupKey.split('::');

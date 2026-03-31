@@ -203,7 +203,7 @@ const HeaderFileMenu: FC<Props> = ({ designName, onRemove }) => {
           label: t('header.resizePage', 'Resize page') + ` (${activePage + 1})`,
           type: 'normal',
           icon: <ResizeIcon />,
-          disabled: isPageLocked || user?.role === 'user',
+          disabled: isPageLocked,
           action: () => {
             setIsCreating(false);
             setSize(pageSize);

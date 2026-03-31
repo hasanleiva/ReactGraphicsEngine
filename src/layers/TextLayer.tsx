@@ -19,20 +19,18 @@ const TextLayer: LayerComponent<TextLayerProps> = ({
 }) => {
     const { actions, id, pageIndex } = useLayer();
     const { selectedLayerIds } = useSelectedLayers();
-    const { actions: editorActions, textEditor, isPageLocked } = useEditor((state) => ({
+    const { actions: editorActions, textEditor } = useEditor((state) => ({
         textEditor: state.textEditor,
-        isPageLocked: state.pages.length > 0 ? state.pages[state.activePage]?.layers.ROOT.data.locked : false,
     }));
     useEffect(() => {
         const editor = createEditor({ content: text });
         editor && actions.setTextEditor(editor);
     }, []);
     const handleStartUpdate = useCallback(() => {
-        if (isPageLocked) return;
         if (selectedLayerIds.includes(id)) {
             actions.openTextEditor();
         }
-    }, [editorActions, selectedLayerIds, isPageLocked]);
+    }, [editorActions, selectedLayerIds]);
 
     const isEditing = useMemo(() => {
         if (!textEditor) return false;

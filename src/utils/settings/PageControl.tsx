@@ -9,28 +9,22 @@ import EditorButton from 'canva-editor/components/EditorButton';
 import NotesIcon from 'canva-editor/icons/NotesIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 
-import LockIcon from 'canva-editor/icons/LockIcon';
-import LockOpenIcon from 'canva-editor/icons/LockOpenIcon';
-
 const PageControl = () => {
   const t = useTranslate();
   const labelScaleOptionRef = useRef<HTMLDivElement>(null);
   const [openScaleOptions, setOpenScaleOptions] = useState(false);
-  const { actions, activePage, totalPages, scale, isOpenPageSettings, isOpenNotes, isLocked, userRole } =
+  const { actions, activePage, totalPages, scale, isOpenPageSettings, isOpenNotes } =
     useEditor((state) => ({
       activePage: state.activePage,
       totalPages: state.pages.length,
       scale: state.scale,
       isOpenPageSettings: state.openPageSettings,
-      isOpenNotes: state.sideBarTab === 'Notes',
-      isLocked: state.pages[state.activePage]?.layers.ROOT.data.locked,
-      userRole: state.userRole
+      isOpenNotes: state.sideBarTab === 'Notes'
     }));
 
   const handleChangeScale = (value: number) => {
     actions.setScale(value / 100);
   };
-  const isZoomDisabled = userRole === 'user';
   return (
     <div
       css={{
@@ -62,27 +56,6 @@ const PageControl = () => {
           alignItems: 'center',
         }}
       >
-        <EditorButton
-          disabled={userRole === 'user'}
-          tooltip={isLocked ? t('common.unlock', 'Unlock') : t('common.lock', 'Lock')}
-          onClick={() => {
-            if (isLocked) {
-              actions.unlockPage(activePage);
-            } else {
-              actions.lockPage(activePage);
-            }
-          }}
-        >
-          {isLocked ? <LockIcon /> : <LockOpenIcon />}
-        </EditorButton>
-        <div
-          css={{
-            height: 24,
-            width: `1px`,
-            background: 'rgba(57,76,96,.15)',
-            margin: '0 8px',
-          }}
-        />
         <div css={{ flexGrow: 1 }}>
           {t('common.page', 'Page')} {activePage + 1} / {totalPages}
         </div>
@@ -101,17 +74,16 @@ const PageControl = () => {
             value={scale * 100}
             min={10}
             max={500}
-            disabled={isOpenPageSettings || isZoomDisabled}
+            disabled={isOpenPageSettings}
             onChange={handleChangeScale}
           />
         </div>
         <SettingButton
           ref={labelScaleOptionRef}
           tooltip={t('common.zoom', 'Zoom')}
-          onClick={() => !isZoomDisabled && setOpenScaleOptions(true)}
-          css={{ cursor: isZoomDisabled ? 'not-allowed' : 'pointer' }}
+          onClick={() => setOpenScaleOptions(true)}
         >
-          <div css={{ width: 48, textAlign: 'center', opacity: isZoomDisabled ? 0.5 : 1 }}>
+          <div css={{ width: 48, textAlign: 'center' }}>
             {Math.round(scale * 100)}%
           </div>
         </SettingButton>
