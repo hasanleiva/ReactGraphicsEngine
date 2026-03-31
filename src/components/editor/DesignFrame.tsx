@@ -117,6 +117,8 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
         actions.lockPage(idx);
       });
       actions.setZoomLocked(true);
+    } else {
+      actions.setZoomLocked(false);
     }
 
     setTimeout(() => {
@@ -126,11 +128,7 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
         pageSize.width; // Padding 16x2
       
       if (user?.role === 'user') {
-        const fitScale = Math.min(
-          ((frameRef?.current?.offsetWidth || 0) - 32) / pageSize.width,
-          ((frameRef?.current?.offsetHeight || 0) - 32) / pageSize.height
-        );
-        actions.setScale(fitScale);
+        actions.setScale(0.11);
       } else {
         actions.setScale(initScale > maxInitScale ? maxInitScale : initScale);
       }

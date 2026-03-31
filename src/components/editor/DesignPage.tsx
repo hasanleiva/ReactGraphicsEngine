@@ -43,6 +43,7 @@ import ArrowDownIcon from 'canva-editor/icons/ArrowDownIcon';
 import AddNewPageIcon from 'canva-editor/icons/AddNewPageIcon';
 import EditInlineInput from '../EditInlineInput';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export interface PageProps {
   pageIndex: number;
@@ -81,6 +82,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
   const { selectedLayerIds, selectedLayers } = useSelectedLayers();
   const disabled = useDisabledFeatures();
   const t = useTranslate();
+  const { user } = useAuth();
   const {
     actions,
     hoveredLayer,
@@ -292,13 +294,18 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
         <div css={{ flexGrow: 1 }}>
           <div css={{ display: 'flex' }}>
             <div>{t('common.page', 'Page')} {pageIndex + 1} -</div>&nbsp;
-            <EditInlineInput
-              text={pageName}
-              placeholder={t('common.addPageTitle', 'Add page title')}
-              onSetText={(newText) => {
-                actions.setPageName(pageIndex, newText);
-              }}
-            />
+            {user?.role === 'user' ? (
+              <span>{pageName || t('common.addPageTitle', 'Add page title')}</span>
+            ) : (
+              <EditInlineInput
+                text={pageName}
+                disabled={isLocked}
+                placeholder={t('common.addPageTitle', 'Add page title')}
+                onSetText={(newText) => {
+                  actions.setPageName(pageIndex, newText);
+                }}
+              />
+            )}
           </div>
         </div>
         <div
@@ -320,14 +327,15 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 4,
-              cursor: pageIndex === 0 ? 'not-allowed' : 'pointer',
-              color: pageIndex === 0 ? 'rgba(36,49,61,.4)' : '#0d1216',
+              cursor: user?.role === 'user' || pageIndex === 0 ? 'not-allowed' : 'pointer',
+              color: user?.role === 'user' || pageIndex === 0 ? 'rgba(36,49,61,.4)' : '#0d1216',
               ':hover': {
                 background:
-                  pageIndex === 0 ? undefined : 'rgba(64, 87, 109, 0.07)',
+                  user?.role === 'user' || pageIndex === 0 ? undefined : 'rgba(64, 87, 109, 0.07)',
               },
             }}
             onClick={() => {
+              if (user?.role === 'user') return;
               if (pageIndex !== 0) {
                 onMovePageUp();
               }
@@ -344,17 +352,18 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 4,
-              cursor: pageIndex === totalPages - 1 ? 'not-allowed' : 'pointer',
+              cursor: user?.role === 'user' || pageIndex === totalPages - 1 ? 'not-allowed' : 'pointer',
               color:
-                pageIndex === totalPages - 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
+                user?.role === 'user' || pageIndex === totalPages - 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
               ':hover': {
                 background:
-                  pageIndex === totalPages - 1
+                  user?.role === 'user' || pageIndex === totalPages - 1
                     ? undefined
                     : 'rgba(64, 87, 109, 0.07)',
               },
             }}
             onClick={() => {
+              if (user?.role === 'user') return;
               if (pageIndex !== totalPages - 1) {
                 onMovePageDown();
               }
@@ -371,12 +380,13 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 4,
-              cursor: 'pointer',
+              cursor: user?.role === 'user' ? 'not-allowed' : 'pointer',
               ':hover': {
-                background: 'rgba(64, 87, 109, 0.07)',
+                background: user?.role === 'user' ? undefined : 'rgba(64, 87, 109, 0.07)',
               },
             }}
             onClick={() => {
+              if (user?.role === 'user') return;
               isLocked
                 ? actions.unlockPage(pageIndex)
                 : actions.lockPage(pageIndex);
@@ -394,12 +404,16 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 4,
-              cursor: 'pointer',
+              cursor: user?.role === 'user' ? 'not-allowed' : 'pointer',
+              color: user?.role === 'user' ? 'rgba(36,49,61,.4)' : '#0d1216',
               ':hover': {
-                background: 'rgba(64, 87, 109, 0.07)',
+                background: user?.role === 'user' ? undefined : 'rgba(64, 87, 109, 0.07)',
               },
             }}
-            onClick={() => actions.duplicatePage(pageIndex)}
+            onClick={() => {
+              if (user?.role === 'user') return;
+              actions.duplicatePage(pageIndex);
+            }}
           >
             <DuplicateIcon />
           </div>
@@ -412,19 +426,20 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 4,
-              cursor: isLocked || totalPages <= 1 ? 'not-allowed' : 'pointer',
+              cursor: user?.role === 'user' || isLocked || totalPages <= 1 ? 'not-allowed' : 'pointer',
               color:
-                isLocked || totalPages <= 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
+                user?.role === 'user' || isLocked || totalPages <= 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
               ':hover': {
                 background:
-                  isLocked || totalPages <= 1
+                  user?.role === 'user' || isLocked || totalPages <= 1
                     ? undefined
                     : 'rgba(64, 87, 109, 0.07)',
               },
             }}
-            onClick={() =>
-              !isLocked && totalPages > 1 && actions.deletePage(pageIndex)
-            }
+            onClick={() => {
+              if (user?.role === 'user') return;
+              !isLocked && totalPages > 1 && actions.deletePage(pageIndex);
+            }}
           >
             <TrashIcon />
           </div>
@@ -437,12 +452,16 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 4,
-              cursor: 'pointer',
+              cursor: user?.role === 'user' ? 'not-allowed' : 'pointer',
+              color: user?.role === 'user' ? 'rgba(36,49,61,.4)' : '#0d1216',
               ':hover': {
-                background: 'rgba(64, 87, 109, 0.07)',
+                background: user?.role === 'user' ? undefined : 'rgba(64, 87, 109, 0.07)',
               },
             }}
-            onClick={() => actions.addPage(pageIndex)}
+            onClick={() => {
+              if (user?.role === 'user') return;
+              actions.addPage(pageIndex);
+            }}
           >
             <AddNewPageIcon />
           </div>

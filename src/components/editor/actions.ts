@@ -120,6 +120,7 @@ export const ActionMethods = (state: EditorState) => {
       props: DeepPartial<T>,
       customizer?: (objVal: unknown, srcVal: unknown) => unknown
     ) {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       if (isArray(layerId)) {
         ids.push(...layerId);
@@ -135,6 +136,7 @@ export const ActionMethods = (state: EditorState) => {
       });
     },
     moveSelectedLayers: (direction: EdgeDirection, value: number) => {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       state.controlBox = undefined;
       state.selectedLayers[state.activePage].forEach((layerId) => {
         if (direction === 'right') {
@@ -156,6 +158,7 @@ export const ActionMethods = (state: EditorState) => {
       state.name = name;
     },
     changePageSize: (size: PageSize) => {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const changeW = size.width - state.pageSize.width;
       const changeH = size.height - state.pageSize.height;
       state.pageSize = size;
@@ -277,6 +280,7 @@ export const ActionMethods = (state: EditorState) => {
     setAlign(
       alignment: 'left' | 'right' | 'center' | 'top' | 'bottom' | 'middle'
     ) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const getChangeX = (box: BoxData, layer: Layer<LayerComponentProps>) => {
         const rect = boundingRect(
           layer.data.props.boxSize,
@@ -441,6 +445,7 @@ export const ActionMethods = (state: EditorState) => {
       state.pages = pages;
     },
     setPage: (pageIndex: number, serializedPage: SerializedPage) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const page: Page = {
         name: '',
         notes: '',
@@ -487,9 +492,11 @@ export const ActionMethods = (state: EditorState) => {
       state.pages[pageIndex] = page;
     },
     setPageName(pageIndex: number, name: string) {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       state.pages[pageIndex].name = name;
     },
     setPageNotes(pageIndex: number, notes: string) {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       state.pages[pageIndex].notes = notes;
     },
     setActivePage(pageIndex: number) {
@@ -499,6 +506,7 @@ export const ActionMethods = (state: EditorState) => {
       state.activePage = pageIndex;
     },
     deleteLayer: (pageIndex: number, layerId: LayerId | LayerId[]) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       if (typeof layerId === 'object') {
         ids.push(...layerId);
@@ -519,6 +527,7 @@ export const ActionMethods = (state: EditorState) => {
       });
     },
     openTextEditor(pageIndex: number, layerId: LayerId) {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       state.textEditor = {
         pageIndex,
         layerId,
@@ -549,6 +558,7 @@ export const ActionMethods = (state: EditorState) => {
       state.pages[pageIndex].layers.ROOT.data.locked = false;
     },
     deletePage: (pageIndex: number) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       state.selectedLayers = {};
       state.hoveredLayer = {};
       state.pages.splice(pageIndex, 1);
@@ -557,6 +567,7 @@ export const ActionMethods = (state: EditorState) => {
       }
     },
     duplicatePage(pageIndex: number) {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       state.textEditor = undefined;
       state.imageEditor = undefined;
       const newPage: Page = {
@@ -619,18 +630,21 @@ export const ActionMethods = (state: EditorState) => {
       state.selectedLayers[state.activePage] = ['ROOT'];
     },
     movePageUp: (pageIndex: number) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const newPage = cloneDeep(state.pages[pageIndex]);
       state.pages.splice(pageIndex, 1);
       state.pages.splice(pageIndex - 1, 0, newPage);
       state.activePage = pageIndex - 1;
     },
     movePageDown: (pageIndex: number) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const newPage = cloneDeep(state.pages[pageIndex]);
       state.pages.splice(pageIndex, 1);
       state.pages.splice(pageIndex + 1, 0, newPage);
       state.activePage = pageIndex + 1;
     },
     swapPagePosition: (from: number, to: number) => {
+      if (state.pages[from]?.layers.ROOT.data.locked || state.pages[to]?.layers.ROOT.data.locked) return;
       arrayMoveMutable(state.pages, from, to);
     },
     lock: (pageIndex: number, layerId: LayerId | LayerId[]) => {
@@ -657,6 +671,7 @@ export const ActionMethods = (state: EditorState) => {
     },
     ungroup(layerId: LayerId) {
       const activePage = state.activePage;
+      if (state.pages[activePage].layers.ROOT.data.locked) return [];
       const layers = state.pages[state.activePage].layers;
       const group = layers[layerId] as Layer<GroupLayerProps>;
       const child = layers[layerId].data.child;
@@ -700,8 +715,9 @@ export const ActionMethods = (state: EditorState) => {
       return child;
     },
     group(layerIds: LayerId[]) {
-      const ids: LayerId[] = [];
       const activePage = state.activePage;
+      if (state.pages[activePage].layers.ROOT.data.locked) return '';
+      const ids: LayerId[] = [];
       const layers = state.pages[state.activePage].layers;
       layerIds.forEach((layerId) => {
         if (isGroupLayer(layers[layerId])) {
@@ -801,6 +817,7 @@ export const ActionMethods = (state: EditorState) => {
       layerId: LayerId | LayerId[],
       toIndex = -1
     ) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       if (typeof layerId === 'object') {
         ids.push(...layerId);
@@ -816,6 +833,7 @@ export const ActionMethods = (state: EditorState) => {
       });
     },
     bringForward: (pageIndex: number, layerId: LayerId | LayerId[]) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       if (typeof layerId === 'object') {
         ids.push(...layerId);
@@ -836,6 +854,7 @@ export const ActionMethods = (state: EditorState) => {
       layerId: LayerId | LayerId[],
       toIndex = -1
     ) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       if (typeof layerId === 'object') {
         ids.push(...layerId);
@@ -851,6 +870,7 @@ export const ActionMethods = (state: EditorState) => {
       });
     },
     sendBackward: (pageIndex: number, layerId: LayerId | LayerId[]) => {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       if (typeof layerId === 'object') {
         ids.push(...layerId);
@@ -876,6 +896,7 @@ export const ActionMethods = (state: EditorState) => {
       serializedLayer: Pick<SerializedLayer, 'type' | 'props'>,
       parentId: LayerId = 'ROOT'
     ) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const layerId = getRandomId();
       const dl = deserializeLayer({
         ...serializedLayer,
@@ -900,6 +921,7 @@ export const ActionMethods = (state: EditorState) => {
       serializedLayer: Pick<SerializedLayer, 'type' | 'props'>,
       parentId: LayerId = 'ROOT'
     ) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const layerId = getRandomId();
       const dl = deserializeLayer({
         ...serializedLayer,
@@ -945,6 +967,7 @@ export const ActionMethods = (state: EditorState) => {
       serializedLayer: Pick<SerializedLayer, 'type' | 'props'>,
       parentId: LayerId = 'ROOT'
     ) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const layerId = getRandomId();
       const dl = deserializeLayer({
         ...serializedLayer,
@@ -976,6 +999,7 @@ export const ActionMethods = (state: EditorState) => {
       boxSize: BoxSize,
       parentId: LayerId = 'ROOT'
     ) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const layerId = getRandomId();
       const pageSize = state.pageSize;
       const ratio = pageSize.width / pageSize.height;
@@ -1033,6 +1057,7 @@ export const ActionMethods = (state: EditorState) => {
       this.selectLayers(state.activePage, layerId);
     },
     addLayerTree(data: SerializedLayerTree) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       // The payload from action dispatch is an array, so when spread with ...action.payload,
       // if payload is [{ rootId, layers }], data will be { rootId, layers }
       // But if payload is undefined or empty [], data will be undefined
@@ -1071,6 +1096,7 @@ export const ActionMethods = (state: EditorState) => {
       this.selectLayers(state.activePage, layer.id);
     },
     addLayerTrees(data: SerializedLayerTree[]) {
+      if (state.pages[state.activePage].layers.ROOT.data.locked) return;
       const ids: LayerId[] = [];
       const layers = data.map((serializeLayers) => {
         const layer = addLayerTreeToParent(state.activePage, serializeLayers);
@@ -1148,6 +1174,7 @@ export const ActionMethods = (state: EditorState) => {
         } | null;
       }
     ) {
+      if (state.pages[pageIndex].layers.ROOT.data.locked) return;
       if (image?.url) {
         state.imageEditor = cloneDeep({
           pageIndex,

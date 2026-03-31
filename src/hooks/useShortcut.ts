@@ -139,10 +139,13 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           isSelectedLayer && actions.selectAllLayers();
           break;
         case normalizeKeyName('Mod-z'):
+          if (isPageLocked) return;
           actions.history.undo();
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-y'):
+        case normalizeKeyName('Mod-Shift-z'):
+          if (isPageLocked) return;
           actions.history.redo();
           e.preventDefault();
           break;

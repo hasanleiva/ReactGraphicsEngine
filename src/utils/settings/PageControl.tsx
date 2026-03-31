@@ -133,17 +133,7 @@ const PageControl = () => {
             ))}
           </div>
         </Popover>
-        {user?.role === 'user' && (
-          <EditorButton
-            isActive={isZoomLocked}
-            tooltip={isZoomLocked ? 'Unlock Zoom' : 'Lock Zoom'}
-            onClick={() => {
-              actions.setZoomLocked(!isZoomLocked);
-            }}
-          >
-            {isZoomLocked ? <LockIcon /> : <LockOpenIcon />}
-          </EditorButton>
-        )}
+
         <EditorButton
           isActive={isOpenPageSettings}
           tooltip='Grid view'

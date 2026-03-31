@@ -79,7 +79,9 @@ const HeaderLayout: ForwardRefRenderFunction<
   HeaderLayoutProps
 > = ({ logoUrl, logoComponent, designName, saving, onChanges, onRemove }, ref) => {
   const [name, setName] = useState(designName);
-  const { actions, query } = useEditor();
+  const { actions, query, isPageLocked } = useEditor((state) => ({
+    isPageLocked: state.pages.length > 0 ? state.pages[state.activePage]?.layers.ROOT.data.locked : false,
+  }));
   const isMobile = useMobileDetect();
   const t = useTranslate();
   const { user, setShowAuthPopup, setShowSettingsPopup, setUser } = useAuth();
@@ -196,7 +198,7 @@ const HeaderLayout: ForwardRefRenderFunction<
         <div css={{ display: 'flex', columnGap: 15 }}>
           <EditorButton
             onClick={actions.history.undo}
-            disabled={!query.history.canUndo()}
+            disabled={!query.history.canUndo() || isPageLocked}
             styles={{
               disabledColor: 'hsla(0,0%,100%,.4)',
               color: '#fff',
@@ -207,7 +209,7 @@ const HeaderLayout: ForwardRefRenderFunction<
           </EditorButton>
           <EditorButton
             onClick={actions.history.redo}
-            disabled={!query.history.canRedo()}
+            disabled={!query.history.canRedo() || isPageLocked}
             styles={{
               disabledColor: 'hsla(0,0%,100%,.4)',
               color: '#fff',
