@@ -453,9 +453,7 @@ export const ActionMethods = (state: EditorState) => {
         pages.push(page);
       });
       state.pages = pages;
-      if (state.userRole === 'user') {
-        state.scale = 0.11;
-      }
+      state.scale = 0.1;
     },
     setPage: (pageIndex: number, serializedPage: SerializedPage) => {
       const page: Page = {
@@ -502,6 +500,7 @@ export const ActionMethods = (state: EditorState) => {
       state.selectedLayers = {};
       state.controlBox = undefined;
       state.pages[pageIndex] = page;
+      state.scale = 0.1;
     },
     setPageName(pageIndex: number, name: string) {
       state.pages[pageIndex].name = name;
@@ -609,6 +608,7 @@ export const ActionMethods = (state: EditorState) => {
       state.selectedLayers = {
         [pageIndex + 1]: ['ROOT'],
       };
+      state.scale = 0.1;
     },
     addPage: (pageIndex?: number) => {
       const page: Page = {
@@ -649,9 +649,7 @@ export const ActionMethods = (state: EditorState) => {
         state.activePage = state.activePage + 1;
       }
       state.selectedLayers[state.activePage] = ['ROOT'];
-      if (state.userRole === 'user') {
-        state.scale = 0.11;
-      }
+      state.scale = 0.1;
     },
     movePageUp: (pageIndex: number) => {
       const newPage = cloneDeep(state.pages[pageIndex]);

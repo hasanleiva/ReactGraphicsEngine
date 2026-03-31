@@ -211,7 +211,7 @@ export const useEditorStore = () => {
     selectedLayers: {},
     hoveredLayer: {},
     openMenu: null,
-    scale: 1,
+    scale: 0.1,
     activePage: 0,
     pageSize: {
       width: 1640,
