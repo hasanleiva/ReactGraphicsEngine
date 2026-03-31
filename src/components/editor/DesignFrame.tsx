@@ -110,27 +110,7 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges, userRole }) => {
   useEffect(() => {
     const serializedData: SerializedPage[] = unpack(data);
     actions.setData(serializedData);
-
-    if (userRole === 'user') {
-      serializedData.forEach((_, idx) => {
-        actions.lockPage(idx);
-      });
-    }
-
-    setTimeout(() => {
-      let initScale;
-      if (userRole === 'user') {
-        initScale = 0.11;
-      } else {
-        const maxInitScale = 0.5;
-        initScale =
-          ((frameRef?.current?.offsetWidth || 0) - (isMobile ? 32 : 112)) /
-          pageSize.width; // Padding 16x2
-        if (initScale > maxInitScale) initScale = maxInitScale;
-      }
-      actions.setScale(initScale);
-    }, 16);
-  }, [data, actions, userRole]);
+  }, [data, actions]);
 
   useEffect(() => {
     if (downloadPNGCmd === -1) return;

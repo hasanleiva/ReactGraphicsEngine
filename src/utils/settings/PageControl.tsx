@@ -16,19 +16,21 @@ const PageControl = () => {
   const t = useTranslate();
   const labelScaleOptionRef = useRef<HTMLDivElement>(null);
   const [openScaleOptions, setOpenScaleOptions] = useState(false);
-  const { actions, activePage, totalPages, scale, isOpenPageSettings, isOpenNotes, isLocked } =
+  const { actions, activePage, totalPages, scale, isOpenPageSettings, isOpenNotes, isLocked, userRole } =
     useEditor((state) => ({
       activePage: state.activePage,
       totalPages: state.pages.length,
       scale: state.scale,
       isOpenPageSettings: state.openPageSettings,
       isOpenNotes: state.sideBarTab === 'Notes',
-      isLocked: state.pages[state.activePage]?.layers.ROOT.data.locked
+      isLocked: state.pages[state.activePage]?.layers.ROOT.data.locked,
+      userRole: state.userRole
     }));
 
   const handleChangeScale = (value: number) => {
     actions.setScale(value / 100);
   };
+  const isZoomDisabled = userRole === 'user';
   return (
     <div
       css={{
@@ -98,16 +100,17 @@ const PageControl = () => {
             value={scale * 100}
             min={10}
             max={500}
-            disabled={isOpenPageSettings}
+            disabled={isOpenPageSettings || isZoomDisabled}
             onChange={handleChangeScale}
           />
         </div>
         <SettingButton
           ref={labelScaleOptionRef}
           tooltip={t('common.zoom', 'Zoom')}
-          onClick={() => setOpenScaleOptions(true)}
+          onClick={() => !isZoomDisabled && setOpenScaleOptions(true)}
+          css={{ cursor: isZoomDisabled ? 'not-allowed' : 'pointer' }}
         >
-          <div css={{ width: 48, textAlign: 'center' }}>
+          <div css={{ width: 48, textAlign: 'center', opacity: isZoomDisabled ? 0.5 : 1 }}>
             {Math.round(scale * 100)}%
           </div>
         </SettingButton>

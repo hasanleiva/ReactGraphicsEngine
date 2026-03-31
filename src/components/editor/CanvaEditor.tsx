@@ -45,6 +45,12 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
   const isPreview = searchQueryParam('preview');
 
   useEffect(() => {
+    if (userRole) {
+      actions.setUserRole(userRole);
+    }
+  }, [userRole, actions]);
+
+  useEffect(() => {
     const windowHeight = () => {
       setViewPortHeight(window.innerHeight);
     };
