@@ -26,6 +26,7 @@ export type EditorProps = {
   onChanges: (changes: any) => void;
   onDesignNameChanges: (name: any) => void;
   onRemove: () => void;
+  userRole?: string;
 };
 
 const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
@@ -35,6 +36,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
   onChanges,
   onDesignNameChanges,
   onRemove,
+  userRole,
 }) => {
   const version = '1.0.69';
   const { getState, actions, query } = useEditorStore();
@@ -52,6 +54,19 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
       window.removeEventListener('resize', windowHeight);
     };
   }, []);
+
+  useEffect(() => {
+    if (userRole) {
+      actions.setUserRole(userRole);
+      if (userRole === 'user') {
+        const currentState = getState();
+        if (!currentState.sideBarTab) {
+          actions.setSidebarTab('Elements');
+          actions.setSidebar();
+        }
+      }
+    }
+  }, [userRole]);
 
   useEffect(() => {
     if (config?.apis?.userToken) {
