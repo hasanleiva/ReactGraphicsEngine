@@ -1,12 +1,9 @@
 import { useMemo } from 'react';
 import { isFrameLayer, isGroupLayer, isShapeLayer, isTextLayer } from 'canva-editor/utils/layer/layers';
 import { useSelectedLayers } from '.';
-import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export const useDisabledFeatures = () => {
     const { selectedLayers } = useSelectedLayers();
-    const { user } = useAuth();
-    
     const scalable = useMemo(
         () => !!selectedLayers.find((layer) => isTextLayer(layer) || isGroupLayer(layer) || isShapeLayer(layer)),
         [JSON.stringify(selectedLayers.map((l) => l.id))],
@@ -20,17 +17,6 @@ export const useDisabledFeatures = () => {
             rotate: false,
             scalable: !scalable,
         };
-        
-        if (user?.role === 'user') {
-            disable.locked = true;
-            disable.vertical = true;
-            disable.horizontal = true;
-            disable.corners = true;
-            disable.rotate = true;
-            disable.scalable = true;
-            return disable;
-        }
-
         selectedLayers.forEach((layer) => {
             if (layer.data.locked) {
                 disable.locked = true;
@@ -51,5 +37,5 @@ export const useDisabledFeatures = () => {
             }
         });
         return disable;
-    }, [selectedLayers, user?.role]);
+    }, [selectedLayers]);
 };

@@ -45,31 +45,31 @@ const Sidebar: FC<{ version: string }> = ({ version }) => {
   const isMobile = useMobileDetect();
   const t = useTranslate();
   const { user } = useAuth();
-  const tabs = user?.role === 'user'
-    ? [
-        {
-          name: 'Elements',
-          displayName: t('sidebar.elements', 'Elements'),
-          icon: <ElementsIcon />,
-        },
-      ]
-    : [
-        {
-          name: 'Template',
-          displayName: t('sidebar.template', 'Template'),
-          icon: <LayoutIcon />,
-        },
-        {
-          name: 'Text',
-          displayName: t('sidebar.text', 'Text'),
-          icon: <TextIcon />,
-        },
-        {
-          name: 'Image',
-          displayName: t('sidebar.image', 'Image'),
-          icon: <ImageIcon />,
-        },
-      ];
+  const tabs = [
+    {
+      name: 'Template',
+      displayName: t('sidebar.template', 'Template'),
+      icon: <LayoutIcon />,
+    },
+    {
+      name: 'Text',
+      displayName: t('sidebar.text', 'Text'),
+      icon: <TextIcon />,
+    },
+    {
+      name: 'Image',
+      displayName: t('sidebar.image', 'Image'),
+      icon: <ImageIcon />,
+    },
+  ];
+
+  if (user?.role === 'user') {
+    tabs.push({
+      name: 'Elements',
+      displayName: t('sidebar.elements', 'Elements'),
+      icon: <ElementsIcon />,
+    });
+  }
 
   const getSidebarComponent = (tabName: string) => {
     switch (tabName) {
