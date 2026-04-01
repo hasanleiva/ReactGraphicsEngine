@@ -24,7 +24,6 @@ const Toolbar = () => {
     isOpenMenu,
     scale,
     isPageLocked,
-    userRole,
   } = useEditor((state) => ({
     isGroup: state.selectedLayers[state.activePage].length > 1,
     isDragging: state.dragData.status,
@@ -35,7 +34,6 @@ const Toolbar = () => {
     isPageLocked: state.pages[state.activePage].layers.ROOT.data.locked,
     isOpenMenu: !!state.openMenu,
     scale: state.scale,
-    userRole: state.userRole,
   }));
   const isLocked = selectedLayers.find((i) => i.data.locked);
   const boundingBoxRect = useMemo(() => {
@@ -122,7 +120,7 @@ const Toolbar = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          {!isPageLocked && !isLocked && !selectedLayerIds.includes('ROOT') && userRole !== 'user' && (
+          {!isPageLocked && !isLocked && !selectedLayerIds.includes('ROOT') && (
             <Fragment>
               {selectedLayerIds.length > 1 && (
                 <div

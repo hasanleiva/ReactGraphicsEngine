@@ -78,10 +78,7 @@ const SortableItem = SortableElement(
     onOpenContextMenu,
   }, ref) => {
     const { user } = useAuth();
-    const { actions, activePage, userRole } = useEditor((state) => ({
-      activePage: state.activePage,
-      userRole: state.userRole,
-    }));
+    const { actions, activePage } = useEditor((state) => ({ activePage: state.activePage }));
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       actions.history.new();
@@ -167,7 +164,7 @@ const SortableItem = SortableElement(
               </div>
             )}
           </div>
-          {userRole !== 'user' && (() => {
+          {user?.role === 'admin' && (() => {
             const name = item.data.props.name || (item.data.props as any).a || '';
             const elementType = item.data.props.elementType || (item.data.props as any).aq || '';
             const dropdownData = item.data.props.dropdownData || (item.data.props as any).ar || '';
@@ -268,14 +265,12 @@ const SortableListLayer: FC<LayerSortableType> = ({
   onOpenContextMenu,
   onChange,
 }) => {
-  const { userRole } = useEditor((state) => ({ userRole: state.userRole }));
   return (
     <SortableList
       items={items}
       checkIsSelected={checkIsSelected}
       onSelectLayer={onSelectLayer}
       onOpenContextMenu={onOpenContextMenu}
-      disabled={userRole === 'user'}
       onSortEnd={(change: SortEnd) => {
         if (change?.newIndex !== change.oldIndex) {
           onChange({

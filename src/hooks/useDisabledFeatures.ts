@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
 import { isFrameLayer, isGroupLayer, isShapeLayer, isTextLayer } from 'canva-editor/utils/layer/layers';
 import { useSelectedLayers } from '.';
-import { useAuth } from '../contexts/AuthContext';
 
 export const useDisabledFeatures = () => {
     const { selectedLayers } = useSelectedLayers();
-    const { user } = useAuth();
     const scalable = useMemo(
         () => !!selectedLayers.find((layer) => isTextLayer(layer) || isGroupLayer(layer) || isShapeLayer(layer)),
         [JSON.stringify(selectedLayers.map((l) => l.id))],
@@ -19,16 +17,8 @@ export const useDisabledFeatures = () => {
             rotate: false,
             scalable: !scalable,
         };
-
-        // Page locking logic for 'user' role
-        const isUserRole = user?.role === 'user';
-
         selectedLayers.forEach((layer) => {
-            const isRoot = layer.id === 'ROOT';
-            
-            // If user role is 'user', lock everything except ROOT.
-            // Also, per request, background image (ROOT) should be unlocked for every kind of user roles.
-            if ((layer.data.locked && !isRoot) || (isUserRole && !isRoot)) {
+            if (layer.data.locked) {
                 disable.locked = true;
                 disable.vertical = true;
                 disable.horizontal = true;
@@ -47,5 +37,5 @@ export const useDisabledFeatures = () => {
             }
         });
         return disable;
-    }, [selectedLayers, user]);
+    }, [selectedLayers]);
 };

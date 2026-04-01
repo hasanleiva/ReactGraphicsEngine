@@ -33,10 +33,9 @@ const defaultData = [
 interface Props {
   data?: any;
   onChanges?: (changes: any) => void;
-  userRole?: string;
 }
-const EditorContent: FC<Props> = ({ data = defaultData, userRole, ...props }) => {
-  return <DesignFrame data={data} userRole={userRole} {...props} />;
+const EditorContent: FC<Props> = ({ data = defaultData, ...props }) => {
+  return <DesignFrame data={data} {...props} />;
 };
 
 export default EditorContent;

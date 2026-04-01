@@ -1,5 +1,5 @@
 import { Fragment, PropsWithChildren } from 'react';
-import { useEditor, useLayer } from '../hooks';
+import { useLayer } from '../hooks';
 import { LayerComponent } from 'canva-editor/types';
 import { RootContentProps, RootContent, ImageContentProps } from '.';
 
@@ -17,9 +17,6 @@ const RootLayer: LayerComponent<PropsWithChildren<RootLayerProps>> = ({
     scale,
 }) => {
     const { actions } = useLayer();
-    const { isPageLocked } = useEditor((state) => ({
-        isPageLocked: state.pages.length > 0 ? state.pages[state.activePage]?.layers.ROOT.data.locked : false,
-    }));
     return (
         <Fragment>
             <RootContent
@@ -30,10 +27,9 @@ const RootLayer: LayerComponent<PropsWithChildren<RootLayerProps>> = ({
                 color={color}
                 image={image}
                 scale={scale}
-                onDoubleClick={() => {
-                    if (isPageLocked) return;
+                onDoubleClick={() =>
                     (image) && actions.openImageEditor({ boxSize, position, rotate, image })
-                }}
+                }
             />
             {children}
         </Fragment>

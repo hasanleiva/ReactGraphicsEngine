@@ -8,7 +8,7 @@ import { copy } from 'canva-editor/utils/menu/actions/copy';
 import { duplicate } from 'canva-editor/utils/menu/actions/duplicate';
 
 const useShortcut = (frameEle: HTMLElement | null) => {
-  const { actions, state, activePage, rootLayer, scale, selectedLayers, isZoomLocked, isPageLocked, userRole } =
+  const { actions, state, activePage, rootLayer, scale, selectedLayers } =
     useEditor((state) => ({
       rootLayer:
         state.pages[state.activePage] &&
@@ -16,37 +16,31 @@ const useShortcut = (frameEle: HTMLElement | null) => {
       activePage: state.activePage,
       scale: state.scale,
       selectedLayers: state.selectedLayers,
-      isZoomLocked: state.isZoomLocked,
-      isPageLocked: state.pages.length > 0 ? state.pages[state.activePage]?.layers.ROOT.data.locked : false,
-      userRole: state.userRole,
     }));
   const { selectedLayerIds } = useSelectedLayers();
   const handlePaste = useCallback(async () => {
-    if (isPageLocked || userRole === 'user') return;
     await paste({ actions });
     actions.hideContextMenu();
-  }, [actions, isPageLocked, userRole]);
+  }, [actions]);
   const handleCopy = useCallback(async () => {
     await copy(state, { pageIndex: activePage, layerIds: selectedLayerIds });
     actions.hideContextMenu();
   }, [actions, state, activePage, copy, selectedLayerIds]);
 
   const handleDuplicate = useCallback(() => {
-    if (isPageLocked || userRole === 'user') return;
     duplicate(state, {
       pageIndex: activePage,
       layerIds: selectedLayerIds,
       actions,
     });
     actions.hideContextMenu();
-  }, [state, activePage, selectedLayerIds, isPageLocked, userRole]);
+  }, [state, activePage, selectedLayerIds]);
 
   const handleDelete = useCallback(() => {
-    if (isPageLocked || userRole === 'user') return;
     if (!selectedLayerIds.includes('ROOT')) {
       actions.deleteLayer(state.activePage, selectedLayerIds);
     }
-  }, [selectedLayerIds, state, actions, isPageLocked, userRole]);
+  }, [selectedLayerIds, state, actions]);
 
   const backwardDisabled =
     rootLayer?.data.child.findIndex((i) => selectedLayerIds.includes(i)) === 0;
@@ -54,31 +48,26 @@ const useShortcut = (frameEle: HTMLElement | null) => {
     rootLayer?.data.child.findLastIndex((i) => selectedLayerIds.includes(i)) ===
     (rootLayer?.data.child.length || 0) - 1;
   const handleForward = () => {
-    if (isPageLocked || userRole === 'user') return;
     if (!forwardDisabled) {
       actions.bringForward(activePage, selectedLayerIds);
     }
   };
   const handleToFront = () => {
-    if (isPageLocked || userRole === 'user') return;
     if (!forwardDisabled) {
       actions.bringToFront(activePage, selectedLayerIds);
     }
   };
   const handleBackward = () => {
-    if (isPageLocked || userRole === 'user') return;
     if (!backwardDisabled) {
       actions.sendBackward(activePage, selectedLayerIds);
     }
   };
   const handleToBack = () => {
-    if (isPageLocked || userRole === 'user') return;
     if (!backwardDisabled) {
       actions.sendToBack(activePage, selectedLayerIds);
     }
   };
   const handleZoomIn = () => {
-    if (isZoomLocked) return;
     if (scale >= 4) {
       actions.setScale(5);
     } else if (scale >= 3) {
@@ -102,7 +91,6 @@ const useShortcut = (frameEle: HTMLElement | null) => {
     }
   };
   const handleZoomOut = () => {
-    if (isZoomLocked) return;
     if (scale <= 0.25) {
       actions.setScale(0.1);
     } else if (scale <= 0.5) {
@@ -126,7 +114,6 @@ const useShortcut = (frameEle: HTMLElement | null) => {
     }
   };
   const handleZoomReset = () => {
-    if (isZoomLocked) return;
     actions.setScale(1);
   };
   const handleKeydown = useCallback(
@@ -140,13 +127,10 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           isSelectedLayer && actions.selectAllLayers();
           break;
         case normalizeKeyName('Mod-z'):
-          if (isPageLocked || userRole === 'user') return;
           actions.history.undo();
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-y'):
-        case normalizeKeyName('Mod-Shift-z'):
-          if (isPageLocked || userRole === 'user') return;
           actions.history.redo();
           e.preventDefault();
           break;
@@ -184,19 +168,15 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           isSelectedLayer && handleDelete();
           break;
         case normalizeKeyName('ArrowLeft'):
-          if (isPageLocked || userRole === 'user') return;
           isSelectedLayer && actions.moveSelectedLayers('left', 1);
           break;
         case normalizeKeyName('ArrowRight'):
-          if (isPageLocked || userRole === 'user') return;
           isSelectedLayer && actions.moveSelectedLayers('right', 1);
           break;
         case normalizeKeyName('ArrowUp'):
-          if (isPageLocked || userRole === 'user') return;
           isSelectedLayer && actions.moveSelectedLayers('top', 1);
           break;
         case normalizeKeyName('ArrowDown'):
-          if (isPageLocked || userRole === 'user') return;
           isSelectedLayer && actions.moveSelectedLayers('bottom', 1);
           break;
         case normalizeKeyName('Mod-0'):
@@ -228,7 +208,6 @@ const useShortcut = (frameEle: HTMLElement | null) => {
     const handleZoomDesktop = (e: WheelEvent) => {
       if (e.ctrlKey && frameEle) {
         e.preventDefault();
-        if (isZoomLocked) return;
 
         // Apply zoom
         const s = Math.exp((-e.deltaY * zoomStep) / 3);
@@ -251,7 +230,7 @@ const useShortcut = (frameEle: HTMLElement | null) => {
       }
       cancelAnimationFrame(animationFrameId);
     };
-  }, [frameEle, scale, isZoomLocked]);
+  }, [frameEle, scale]);
 
   useEffect(() => {
     frameEle?.addEventListener('keydown', handleKeydown);

@@ -42,12 +42,11 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
     const { selectedLayerIds, selectedLayers } = useSelectedLayers();
     const menuRef = useForwardedRef<HTMLDivElement>(ref);
     const [offset, setOffset] = useState<{ x: number; y: number }>({ x: -9999, y: -9999 });
-    const { state, openMenu, actions, pageIndex, pageSize, rootLayer, userRole } = useEditor((state) => ({
+    const { state, openMenu, actions, pageIndex, pageSize, rootLayer } = useEditor((state) => ({
         openMenu: state.openMenu,
         pageIndex: state.activePage,
         pageSize: state.pageSize,
         rootLayer: state.pages[state.activePage] && state.pages[state.activePage].layers.ROOT,
-        userRole: state.userRole,
     }));
     const imageLayer = selectedLayers.find((l) => l.data.type === 'Image');
     const handleCopy = async () => {
@@ -263,10 +262,10 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                     },
                 }}
             >
-                {!selectedLayerIds.includes('ROOT') && userRole !== 'user' && (
+                {!selectedLayerIds.includes('ROOT') && (
                     <ContextMenuItem name={t('contextMenu.copy', 'Copy')} icon={<CopyIcon />} shortcut={'Ctrl+C'} onClick={handleCopy} />
                 )}
-                {!selectedLayerIds.includes('ROOT') && userRole !== 'user' && (
+                {!selectedLayerIds.includes('ROOT') && (
                     <Fragment>
                         <ContextMenuItem
                             name={t('contextMenu.paste', 'Paste')}
@@ -289,7 +288,7 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                     </Fragment>
                 )}
 
-                {!selectedLayerIds.includes('ROOT') && userRole !== 'user' && (
+                {!selectedLayerIds.includes('ROOT') && (
                     <Fragment>
                         <div
                             css={{
@@ -395,16 +394,16 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                     </Fragment>
                 )}
 
-                {selectedLayerIds.length > 1 && userRole !== 'user' && (
+                {selectedLayerIds.length > 1 && (
                     <ContextMenuItem name={t('contextMenu.group', 'Group')} icon={<GroupingIcon />} onClick={handleGroup} />
                 )}
-                {containerGroupLayer && userRole !== 'user' && (
+                {containerGroupLayer && (
                     <ContextMenuItem name={t('contextMenu.ungroup', 'Ungroup')} icon={<UngroupIcon />} onClick={handleUngroup} />
                 )}
-                {!selectedLayerIds.includes('ROOT') && userRole !== 'user' && (
+                {!selectedLayerIds.includes('ROOT') && (
                     <ContextMenuItem name={t('contextMenu.lock', 'Lock')} icon={<LockIcon />} onClick={handleLock} />
                 )}
-                {imageLayer && selectedLayerIds.length === 1 && userRole !== 'user' && (
+                {imageLayer && selectedLayerIds.length === 1 && (
                     <ContextMenuItem
                         name={t('contextMenu.setAsBackground', 'Set image as background')}
                         icon={<BackgroundSelectionIcon />}
@@ -413,7 +412,7 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                 )}
                 {selectedLayerIds.length === 1 &&
                     selectedLayerIds.includes('ROOT') &&
-                    (rootLayer?.data.props as RootLayerProps)?.image && userRole !== 'user' && (
+                    (rootLayer?.data.props as RootLayerProps)?.image && (
                         <ContextMenuItem
                             name={t('contextMenu.detachImageFromBackground', 'Detach image from background')}
                             icon={<BackgroundSelectionIcon />}
