@@ -5,6 +5,7 @@ import { RefObject, useEffect, useRef } from 'react';
 import { useLinkedRef } from './useLinkedRef';
 import { useTrackingShiftKey } from './useTrackingShiftKey';
 import { getPosition } from 'canva-editor/utils';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 import {
   BoxData,
   CursorPosition,
@@ -46,6 +47,7 @@ export const useDragLayer = ({
   //   const ref = useRef(null);
   const ref2 = useRef<any>(null);
   const shiftKeyRef = useTrackingShiftKey();
+  const { user } = useAuth();
   const [, getLayerData, setLayerData] = useLinkedRef<LayerDataRef>({});
   const [, getControlBoxData, setControlBoxData] = useLinkedRef<BoxData>();
   const { selectedLayers, selectedLayerIds } = useSelectedLayers();
@@ -513,7 +515,7 @@ export const useDragLayer = ({
       setControlBoxData(controlBox);
     }
     setLayerData(data);
-    if (!isContainLockedLayer && !isPageLocked) {
+    if (!isContainLockedLayer && !isPageLocked && user?.role !== 'user') {
       isMobile && actions.setDragData(true, Object.keys(data)); // To avoid swipe when dragging
       bindDraggingEvents();
     } else {

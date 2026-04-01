@@ -21,7 +21,7 @@ const CommonSettings = () => {
   const transparencyButtonRef = useRef<HTMLDivElement>(null);
   const [openTransparencySetting, setOpenTransparencySetting] = useState(false);
   const { selectedLayers, selectedLayerIds } = useSelectedLayers();
-  const { actions, activePage, sidebar, pageSize, isPageLocked } = useEditor(
+  const { actions, activePage, sidebar, pageSize, isPageLocked, userRole } = useEditor(
     (state) => ({
       activePage: state.activePage,
       sidebar: state.sidebar,
@@ -29,6 +29,7 @@ const CommonSettings = () => {
       isPageLocked:
         state.pages[state.activePage] &&
         state.pages[state.activePage].layers.ROOT.data.locked,
+      userRole: state.userRole,
     })
   );
   const [size, setSize] = useState(pageSize);
@@ -97,7 +98,7 @@ const CommonSettings = () => {
           gridGap: 8,
         }}
       >
-        {user?.role !== 'user' && (
+        {userRole !== 'user' && (
           <SettingButton
             css={{ minWidth: 75 }}
             onClick={() => {
@@ -108,7 +109,7 @@ const CommonSettings = () => {
           </SettingButton>
         )}
 
-        {selectedLayerIds.length > 0 && !isLocked && !isPageLocked && (
+        {selectedLayerIds.length > 0 && !isLocked && !isPageLocked && userRole !== 'user' && (
           <Fragment>
             {(!isRootLayer(selectedLayers[0]) ||
               (isRootLayer(selectedLayers[0]) &&
@@ -144,7 +145,7 @@ const CommonSettings = () => {
           </Fragment>
         )}
 
-        {selectedLayerIds.length > 0 && (
+        {selectedLayerIds.length > 0 && !isPageLocked && userRole !== 'user' && (
           <>
             <SettingDivider />
             <SettingButton

@@ -10,6 +10,7 @@ type InlineEditProps = {
   inputCss?: Interpolation<Theme>;
   autoRow?: boolean;
   maxLength?: number;
+  disabled?: boolean;
 };
 
 const EditInlineInput: React.FC<InlineEditProps> = ({
@@ -20,7 +21,8 @@ const EditInlineInput: React.FC<InlineEditProps> = ({
   styles = { placeholderColor: '#73757b' },
   inputCss = null,
   autoRow = true,
-  maxLength = 120
+  maxLength = 120,
+  disabled = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -28,6 +30,7 @@ const EditInlineInput: React.FC<InlineEditProps> = ({
   const [textDraft, setTextDraft] = useState('');
   const handleDoubleClick = (e: { preventDefault: () => void }) => {
     e.preventDefault();
+    if (disabled) return;
     setTextDraft(text);
     setIsEditing(true);
   };
