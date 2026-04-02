@@ -56,7 +56,7 @@ export const useResizeLayer = ({
     });
     const { getResized } = useResize(getControlBoxData as () => BoxData);
     const { selectedLayers, selectedLayerIds } = useSelectedLayers();
-    const { actions } = useEditor();
+    const { actions, userRole } = useEditor();
 
     const getNewSize = (clientX: number, clientY: number): BoxData => {
         const isImage = selectedLayers.length === 1 && isImageLayer(selectedLayers[0]);
@@ -229,7 +229,7 @@ export const useResizeLayer = ({
     }, [getNewSize]);
 
     const startResizing = (e: MouseEvent | TouchEvent, direction: Direction) => {
-        if (controlBox) {
+        if (controlBox && userRole !== 'user') {
             const { clientX, clientY } = getPosition(e);
             resizeRef.current = {
                 clientX,

@@ -8,8 +8,10 @@ import DuplicateIcon from 'canva-editor/icons/DuplicateIcon';
 import TrashIcon from 'canva-editor/icons/TrashIcon';
 import MoreHorizIcon from 'canva-editor/icons/MoreHorizIcon';
 import LockIcon from 'canva-editor/icons/LockIcon';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const Toolbar = () => {
+  const { user } = useAuth();
   const { pageIndex } = useContext(PageContext);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const { selectedLayerIds, selectedLayers } = useSelectedLayers();
@@ -162,23 +164,25 @@ const Toolbar = () => {
                   Ungroup
                 </div>
               )}
-              <div
-                css={{
-                  width: 32,
-                  height: 32,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  fontSize: 24,
-                  ':hover': {
-                    backgroundColor: 'rgba(64,87,109,.07)',
-                  },
-                }}
-                onClick={handleDuplicate}
-              >
-                <DuplicateIcon />
-              </div>
+              {user?.role !== 'user' && (
+                <div
+                  css={{
+                    width: 32,
+                    height: 32,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    fontSize: 24,
+                    ':hover': {
+                      backgroundColor: 'rgba(64,87,109,.07)',
+                    },
+                  }}
+                  onClick={handleDuplicate}
+                >
+                  <DuplicateIcon />
+                </div>
+              )}
 
               <div
                 css={{

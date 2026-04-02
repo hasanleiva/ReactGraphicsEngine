@@ -144,6 +144,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       const unpackedData = unpack(data);
       const pages = Array.isArray(unpackedData) ? unpackedData : [unpackedData];
       actions.setData(pages);
+      actions.setTemplate(true);
     } catch (err) {
       console.warn('Something went wrong!');
       console.log(err);

@@ -241,6 +241,8 @@ export const useEditorStore = () => {
     gumroadLink: 'https://kenvinlu.gumroad.com/l/canva-editor',
     isAdjustingSlider: false,
     saving: false,
+    userRole: 'admin',
+    isTemplate: false,
   });
 
   const actions = useMemo<EditorActions>(() => {

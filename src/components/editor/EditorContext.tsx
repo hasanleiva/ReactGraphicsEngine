@@ -13,12 +13,14 @@ export type EditorContextType = {
   query: EditorQuery;
   actions: EditorActions;
   config: EditorConfig;
+  userRole?: 'admin' | 'user';
 };
 
 const defaultContext: EditorContextType = {
   getState: () => ({} as EditorState),
   query: {} as EditorQuery,
   actions: {} as EditorActions,
+  userRole: 'user',
   config: {
     logoUrl: '',
     logoComponent: undefined,
