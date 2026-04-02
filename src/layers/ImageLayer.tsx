@@ -17,10 +17,7 @@ export interface ImageLayerProps extends ImageContentProps {
 const ImageLayer: LayerComponent<ImageLayerProps> = ({ image, boxSize, position, rotate }) => {
     const { actions, pageIndex, id } = useLayer();
     const { selectedLayerIds } = useSelectedLayers();
-    const { imageEditor, isPageLocked } = useEditor((state) => ({ 
-        imageEditor: state.imageEditor,
-        isPageLocked: state.pages.length > 0 ? state.pages[state.activePage]?.layers.ROOT.data.locked : false,
-    }));
+    const { imageEditor } = useEditor((state) => ({ imageEditor: state.imageEditor }));
     const [imageData, setImageData] = useState<ImageLayerProps['image']>({ ...image, url: image.thumb });
     useEffect(() => {
         const img = new Image();
@@ -42,10 +39,9 @@ const ImageLayer: LayerComponent<ImageLayerProps> = ({ image, boxSize, position,
                         ? 'hidden'
                         : undefined,
             }}
-            onDoubleClick={() => {
-                if (isPageLocked) return;
+            onDoubleClick={() =>
                 selectedLayerIds.includes(id) && actions.openImageEditor({ position, rotate, boxSize, image })
-            }}
+            }
         >
             <ImageContent image={imageData} boxSize={boxSize} rotate={rotate} position={position} />
         </div>

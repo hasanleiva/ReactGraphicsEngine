@@ -17,9 +17,8 @@ const FrameLayer: LayerComponent<FrameLayerProps> = ({
   const { actions, pageIndex, id } = useLayer();
   const { selectedLayerIds } = useSelectedLayers();
   const [newImg, setNewImg] = useState<any>(null);
-  const { imageEditor, isPageLocked } = useEditor((state) => ({
+  const { imageEditor } = useEditor((state) => ({
     imageEditor: state.imageEditor,
-    isPageLocked: state.pages.length > 0 ? state.pages[state.activePage]?.layers.ROOT.data.locked : false,
   }));
   useEffect(() => {
     if (image) {
@@ -43,7 +42,6 @@ const FrameLayer: LayerComponent<FrameLayerProps> = ({
   }, [image, color, gradientBackground]);
 
   const handleDoubleClick = () => {
-    if (isPageLocked) return;
     image &&
       selectedLayerIds.includes(id) &&
       actions.openImageEditor({

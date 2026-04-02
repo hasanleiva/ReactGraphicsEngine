@@ -61,8 +61,6 @@ export const useDragLayer = ({
     layers,
     isPageLocked,
     mainLayers,
-    userRole,
-    isTemplate,
   } = useEditor((state) => {
     const hoveredPage = parseInt(Object.keys(state.hoveredLayer)[0]);
     const hoverLayerId = state.hoveredLayer[hoveredPage];
@@ -87,8 +85,6 @@ export const useDragLayer = ({
         state.pages[hoveredPage].layers.ROOT.data.child
           .map((c) => state.pages[hoveredPage].layers[c])
           .reverse(),
-      userRole: state.userRole,
-      isTemplate: state.isTemplate,
     };
   });
   let tempFrameLayer: Layer<LayerComponentProps> | null = null;
@@ -517,8 +513,7 @@ export const useDragLayer = ({
       setControlBoxData(controlBox);
     }
     setLayerData(data);
-    const isUserRestricted = userRole === 'user' && isTemplate;
-    if (!isContainLockedLayer && !isPageLocked && !isUserRestricted) {
+    if (!isContainLockedLayer && !isPageLocked) {
       isMobile && actions.setDragData(true, Object.keys(data)); // To avoid swipe when dragging
       bindDraggingEvents();
     } else {

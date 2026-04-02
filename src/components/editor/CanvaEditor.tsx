@@ -26,7 +26,6 @@ export type EditorProps = {
   onChanges: (changes: any) => void;
   onDesignNameChanges: (name: any) => void;
   onRemove: () => void;
-  userRole?: 'admin' | 'user';
 };
 
 const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
@@ -36,16 +35,9 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
   onChanges,
   onDesignNameChanges,
   onRemove,
-  userRole,
 }) => {
   const version = '1.0.69';
   const { getState, actions, query } = useEditorStore();
-
-  useEffect(() => {
-    if (userRole) {
-      actions.setUserRole(userRole);
-    }
-  }, [userRole, actions]);
   const leftSidebarRef = useRef<HTMLDivElement>(null);
   const [viewPortHeight, setViewPortHeight] = useState<number>();
   const isPreview = searchQueryParam('preview');

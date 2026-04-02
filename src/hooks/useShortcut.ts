@@ -6,10 +6,8 @@ import { paste } from 'canva-editor/utils/menu/actions/paste';
 import { modifiers, normalizeKeyName } from 'canva-editor/utils';
 import { copy } from 'canva-editor/utils/menu/actions/copy';
 import { duplicate } from 'canva-editor/utils/menu/actions/duplicate';
-import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const useShortcut = (frameEle: HTMLElement | null) => {
-  const { user } = useAuth();
   const { actions, state, activePage, rootLayer, scale, selectedLayers } =
     useEditor((state) => ({
       rootLayer:
@@ -137,9 +135,7 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-v'):
-          if (user?.role !== 'user') {
-            await handlePaste();
-          }
+          await handlePaste();
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-c'):
@@ -147,26 +143,24 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-d'):
-          if (isSelectedLayer && user?.role !== 'user') {
-            await handleDuplicate();
-          }
+          isSelectedLayer && (await handleDuplicate());
           e.preventDefault();
           break;
 
         case normalizeKeyName('Mod-]'):
-          isSelectedLayer && user?.role !== 'user' && handleForward();
+          isSelectedLayer && handleForward();
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-Alt-]'):
-          isSelectedLayer && user?.role !== 'user' && handleToFront();
+          isSelectedLayer && handleToFront();
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-['):
-          isSelectedLayer && user?.role !== 'user' && handleBackward();
+          isSelectedLayer && handleBackward();
           e.preventDefault();
           break;
         case normalizeKeyName('Mod-Alt-['):
-          isSelectedLayer && user?.role !== 'user' && handleToBack();
+          isSelectedLayer && handleToBack();
           e.preventDefault();
           break;
         case normalizeKeyName('Delete'):
@@ -174,16 +168,16 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           isSelectedLayer && handleDelete();
           break;
         case normalizeKeyName('ArrowLeft'):
-          isSelectedLayer && user?.role !== 'user' && actions.moveSelectedLayers('left', 1);
+          isSelectedLayer && actions.moveSelectedLayers('left', 1);
           break;
         case normalizeKeyName('ArrowRight'):
-          isSelectedLayer && user?.role !== 'user' && actions.moveSelectedLayers('right', 1);
+          isSelectedLayer && actions.moveSelectedLayers('right', 1);
           break;
         case normalizeKeyName('ArrowUp'):
-          isSelectedLayer && user?.role !== 'user' && actions.moveSelectedLayers('top', 1);
+          isSelectedLayer && actions.moveSelectedLayers('top', 1);
           break;
         case normalizeKeyName('ArrowDown'):
-          isSelectedLayer && user?.role !== 'user' && actions.moveSelectedLayers('bottom', 1);
+          isSelectedLayer && actions.moveSelectedLayers('bottom', 1);
           break;
         case normalizeKeyName('Mod-0'):
           handleZoomReset();

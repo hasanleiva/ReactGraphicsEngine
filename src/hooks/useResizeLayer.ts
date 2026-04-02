@@ -56,12 +56,7 @@ export const useResizeLayer = ({
     });
     const { getResized } = useResize(getControlBoxData as () => BoxData);
     const { selectedLayers, selectedLayerIds } = useSelectedLayers();
-    const { actions, userRole, isTemplate } = useEditor((state) => ({
-        actions: state.actions,
-        userRole: state.userRole,
-        isTemplate: state.isTemplate,
-    }));
-    const isUserRestricted = userRole === 'user' && isTemplate;
+    const { actions } = useEditor();
 
     const getNewSize = (clientX: number, clientY: number): BoxData => {
         const isImage = selectedLayers.length === 1 && isImageLayer(selectedLayers[0]);
@@ -138,7 +133,7 @@ export const useResizeLayer = ({
     };
 
     const handleResize = throttle((e: TouchEvent | MouseEvent) => {
-        if (!resizeRef.current.isResizing || isUserRestricted) {
+        if (!resizeRef.current.isResizing) {
             return;
         }
         const { clientX, clientY } = getPosition(e);
@@ -174,7 +169,7 @@ export const useResizeLayer = ({
         }
     }, 16);
     const handleResizeEnd = () => {
-        if (!resizeRef.current.isResizing || isUserRestricted) {
+        if (!resizeRef.current.isResizing) {
             return;
         }
         const { lastClientX, lastClientY } = resizeRef.current;
@@ -234,7 +229,7 @@ export const useResizeLayer = ({
     }, [getNewSize]);
 
     const startResizing = (e: MouseEvent | TouchEvent, direction: Direction) => {
-        if (controlBox && !isUserRestricted) {
+        if (controlBox) {
             const { clientX, clientY } = getPosition(e);
             resizeRef.current = {
                 clientX,

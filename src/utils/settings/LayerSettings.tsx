@@ -83,7 +83,7 @@ const LayerSettings = () => {
             }}
         >
             <div css={{ display: 'grid', alignItems: 'center', gridAutoFlow: 'column', gridGap: 8, paddingRight: 20 }}>
-                {rootLayer && <RootSettings layer={rootLayer} />}
+                {rootLayer && !isPageLocked && <RootSettings layer={rootLayer} />}
                 {shapeLayers.length > 0 && !isPageLocked && <ShapeSettings layers={shapeLayers} />}
                 {textLayers.length > 0 && !isPageLocked && <TextSettings layers={textLayers} />}
                 <CommonSettings />
