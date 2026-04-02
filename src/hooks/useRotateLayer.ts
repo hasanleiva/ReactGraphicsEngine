@@ -45,14 +45,17 @@ export const useRotateLayer = ({
 }) => {
     const rotateRef = useRef<{ centerX: number; centerY: number; last: CursorPosition; prevDegree: number } | undefined>(undefined);
     const { selectedLayers, selectedLayerIds } = useSelectedLayers();
-    const { scale, controlBox, actions } = useEditor((state, query) => {
+    const { scale, controlBox, actions, userRole, isTemplate } = useEditor((state, query) => {
         const hoverLayerId = state.hoveredLayer[pageIndex];
         return {
             scale: state.scale,
             controlBox: state.controlBox as BoxData,
             hoveredLayer: hoverLayerId && query.getLayer(pageIndex, hoverLayerId),
+            userRole: state.userRole,
+            isTemplate: state.isTemplate,
         };
     });
+    const isUserRestricted = userRole === 'user' && isTemplate;
 
     const newLayerData = (degree: number) => {
         const degreeChange = degree - (getControlBoxData() as BoxData).rotate;
@@ -82,7 +85,7 @@ export const useRotateLayer = ({
         return res;
     };
     const handleRotate = throttle((e: MouseEvent | TouchEvent) => {
-        if (!rotateRef.current) {
+        if (!rotateRef.current || isUserRestricted) {
             return;
         }
         const { clientX, clientY } = getPosition(e);
@@ -120,7 +123,7 @@ export const useRotateLayer = ({
     }, 16);
 
     const handleRotateEnd = () => {
-        if (!rotateRef.current) {
+        if (!rotateRef.current || isUserRestricted) {
             return;
         }
         const { clientX, clientY } = rotateRef.current.last;
@@ -170,6 +173,9 @@ export const useRotateLayer = ({
         window.removeEventListener('touchend', handleRotateEnd);
     };
     const startRotate = (e: TouchEvent | MouseEvent) => {
+        if (isUserRestricted) {
+            return;
+        }
         const { clientX, clientY } = getPosition(e);
         const { centerX, centerY } = boundingRect(controlBox.boxSize, controlBox.position, controlBox.rotate);
         rotateRef.current = {

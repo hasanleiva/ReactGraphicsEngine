@@ -383,7 +383,7 @@ export const useZoomPage = (
           width: w,
           height: w * ratio,
         };
-        const scale = Math.min(1, size.width / pageSize.width);
+        const scale = 0.1;
         actions.setScale(scale);
         if (isMobile) {
           const x = (window.innerWidth - pageSize.width * scale - 16 * 2) / 2;

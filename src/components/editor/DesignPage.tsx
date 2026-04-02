@@ -8,6 +8,7 @@ import React, {
 import PageElement from 'canva-editor/layers/core/PageElement';
 import { useEditor, useSelectedLayers } from '../../hooks';
 import { useLinkedRef } from '../../hooks/useLinkedRef';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   BoxData,
   LayerComponentProps,
@@ -79,6 +80,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
     {}
   );
   const { selectedLayerIds, selectedLayers } = useSelectedLayers();
+  const { user } = useAuth();
   const disabled = useDisabledFeatures();
   const t = useTranslate();
   const {
@@ -113,7 +115,7 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
   });
   const openContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (hoveredLayer && hoveredLayer.data.locked) {
+    if (hoveredLayer && hoveredLayer.data.locked && hoveredLayer.id !== 'ROOT') {
       return;
     }
     if (controlBox && pageRef.current && hoveredLayer) {
@@ -359,90 +361,98 @@ const DesignPage: ForwardRefRenderFunction<HTMLDivElement, PageProps> = (
           >
             <ArrowDownIcon />
           </div>
-          <div
-            css={{
-              marginLeft: 8,
-              width: 28,
-              height: 28,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              cursor: 'pointer',
-              ':hover': {
-                background: 'rgba(64, 87, 109, 0.07)',
-              },
-            }}
-            onClick={() => {
-              isLocked
-                ? actions.unlockPage(pageIndex)
-                : actions.lockPage(pageIndex);
-            }}
-          >
-            {!isLocked && <LockOpenIcon />}
-            {isLocked && <LockIcon />}
-          </div>
-          <div
-            css={{
-              marginLeft: 8,
-              width: 28,
-              height: 28,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              cursor: 'pointer',
-              ':hover': {
-                background: 'rgba(64, 87, 109, 0.07)',
-              },
-            }}
-            onClick={() => actions.duplicatePage(pageIndex)}
-          >
-            <DuplicateIcon />
-          </div>
-          <div
-            css={{
-              marginLeft: 8,
-              width: 28,
-              height: 28,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              cursor: isLocked || totalPages <= 1 ? 'not-allowed' : 'pointer',
-              color:
-                isLocked || totalPages <= 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
-              ':hover': {
-                background:
-                  isLocked || totalPages <= 1
-                    ? undefined
-                    : 'rgba(64, 87, 109, 0.07)',
-              },
-            }}
-            onClick={() =>
-              !isLocked && totalPages > 1 && actions.deletePage(pageIndex)
-            }
-          >
-            <TrashIcon />
-          </div>
-          <div
-            css={{
-              marginLeft: 8,
-              width: 28,
-              height: 28,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 4,
-              cursor: 'pointer',
-              ':hover': {
-                background: 'rgba(64, 87, 109, 0.07)',
-              },
-            }}
-            onClick={() => actions.addPage(pageIndex)}
-          >
-            <AddNewPageIcon />
-          </div>
+          {user?.role !== 'user' && (
+            <div
+              css={{
+                marginLeft: 8,
+                width: 28,
+                height: 28,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+                cursor: 'pointer',
+                ':hover': {
+                  background: 'rgba(64, 87, 109, 0.07)',
+                },
+              }}
+              onClick={() => {
+                isLocked
+                  ? actions.unlockPage(pageIndex)
+                  : actions.lockPage(pageIndex);
+              }}
+            >
+              {!isLocked && <LockOpenIcon />}
+              {isLocked && <LockIcon />}
+            </div>
+          )}
+          {user?.role !== 'user' && (
+            <div
+              css={{
+                marginLeft: 8,
+                width: 28,
+                height: 28,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+                cursor: 'pointer',
+                ':hover': {
+                  background: 'rgba(64, 87, 109, 0.07)',
+                },
+              }}
+              onClick={() => actions.duplicatePage(pageIndex)}
+            >
+              <DuplicateIcon />
+            </div>
+          )}
+          {user?.role !== 'user' && (
+            <div
+              css={{
+                marginLeft: 8,
+                width: 28,
+                height: 28,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+                cursor: isLocked || totalPages <= 1 ? 'not-allowed' : 'pointer',
+                color:
+                  isLocked || totalPages <= 1 ? 'rgba(36,49,61,.4)' : '#0d1216',
+                ':hover': {
+                  background:
+                    isLocked || totalPages <= 1
+                      ? undefined
+                      : 'rgba(64, 87, 109, 0.07)',
+                },
+              }}
+              onClick={() =>
+                !isLocked && totalPages > 1 && actions.deletePage(pageIndex)
+              }
+            >
+              <TrashIcon />
+            </div>
+          )}
+          {user?.role !== 'user' && (
+            <div
+              css={{
+                marginLeft: 8,
+                width: 28,
+                height: 28,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+                cursor: 'pointer',
+                ':hover': {
+                  background: 'rgba(64, 87, 109, 0.07)',
+                },
+              }}
+              onClick={() => actions.addPage(pageIndex)}
+            >
+              <AddNewPageIcon />
+            </div>
+          )}
         </div>
       </div>
       <div

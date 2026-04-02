@@ -265,7 +265,7 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                 {!selectedLayerIds.includes('ROOT') && (
                     <ContextMenuItem name={t('contextMenu.copy', 'Copy')} icon={<CopyIcon />} shortcut={'Ctrl+C'} onClick={handleCopy} />
                 )}
-                {!selectedLayerIds.includes('ROOT') && (
+                {!selectedLayerIds.includes('ROOT') && user?.role !== 'user' && (
                     <Fragment>
                         <ContextMenuItem
                             name={t('contextMenu.paste', 'Paste')}
@@ -279,16 +279,18 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                             shortcut={'Ctrl+D'}
                             onClick={handleDuplicate}
                         />
-                        <ContextMenuItem
-                            name={t('contextMenu.delete', 'Delete')}
-                            icon={<TrashIcon />}
-                            shortcut={'Delete'}
-                            onClick={handleDelete}
-                        />
                     </Fragment>
                 )}
-
                 {!selectedLayerIds.includes('ROOT') && (
+                    <ContextMenuItem
+                        name={t('contextMenu.delete', 'Delete')}
+                        icon={<TrashIcon />}
+                        shortcut={'Delete'}
+                        onClick={handleDelete}
+                    />
+                )}
+
+                {!selectedLayerIds.includes('ROOT') && user?.role !== 'user' && (
                     <Fragment>
                         <div
                             css={{
@@ -334,13 +336,11 @@ const LayerContextMenu: ForwardRefRenderFunction<HTMLDivElement> = (_, ref) => {
                                     disabled={backwardDisabled}
                                     onClick={handleToBack}
                                 />
-                                {user?.role !== 'user' && (
-                                    <ContextMenuItem
-                                        name={t('contextMenu.showLayers', 'Show Layers')}
-                                        icon={<LayersIcon />}
-                                        onClick={handleShowLayers}
-                                    />
-                                )}
+                                <ContextMenuItem
+                                    name={t('contextMenu.showLayers', 'Show Layers')}
+                                    icon={<LayersIcon />}
+                                    onClick={handleShowLayers}
+                                />
                             </SubMenu>
                         </ContextMenuItem>
                         <ContextMenuItem name={t('contextMenu.align', 'Align')} icon={<AlignLeftIcon />}>

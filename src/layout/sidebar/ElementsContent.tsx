@@ -540,6 +540,34 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             label="Background Image"
             onChange={(e) => handleImageChange('ROOT', e)}
           />
+          <button
+            onClick={() => {
+              const layer = layers['ROOT'];
+              if (layer && layer.data.props.image) {
+                const { boxSize, position, rotate, image } = layer.data.props;
+                actions.openImageEditor(activePage, 'ROOT', { boxSize, position, rotate, image });
+              }
+            }}
+            css={{
+              width: '100%',
+              padding: '10px 12px',
+              backgroundColor: '#f3f4f6',
+              border: '1px solid #e5e7eb',
+              borderRadius: 6,
+              color: '#111827',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginTop: 8,
+              transition: 'all 0.2s',
+              '&:hover': {
+                backgroundColor: '#e5e7eb',
+                borderColor: '#d1d5db',
+              }
+            }}
+          >
+            Edit Background Size
+          </button>
         </CollapsibleSection>
 
         {imageLayers.length > 0 && (
@@ -580,7 +608,7 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         )}
 
         {dropdownGroupKeys.length > 0 && (
-          <CollapsibleSection title="DROPDOWNS" dotColor="#f59e0b">
+          <CollapsibleSection title="Dropdown" dotColor="#f59e0b">
             {dropdownGroupKeys.map(groupKey => {
               const layersInGroup = dropdownGroups[groupKey];
               const [file] = groupKey.split('::');
