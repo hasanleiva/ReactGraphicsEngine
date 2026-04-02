@@ -229,13 +229,12 @@ const SortableItem = SortableElement(
 );
 
 const SortableList = SortableContainer(
-  React.forwardRef<HTMLUListElement, LayerSortableType & { disabledItem: boolean }>(
+  React.forwardRef<HTMLUListElement, LayerSortableType>(
     ({
       items,
       checkIsSelected,
       onOpenContextMenu,
       onSelectLayer,
-      disabledItem,
     }, ref) => {
       if (!items || !Array.isArray(items)) {
         return <ul ref={ref}></ul>;
@@ -251,7 +250,6 @@ const SortableList = SortableContainer(
               onSelectLayer={() => onSelectLayer(layer.id)}
               onOpenContextMenu={onOpenContextMenu}
               index={index}
-              disabled={disabledItem}
             />
           ))}
         </ul>
@@ -267,10 +265,8 @@ const SortableListLayer: FC<LayerSortableType> = ({
   onOpenContextMenu,
   onChange,
 }) => {
-  const { user } = useAuth();
   return (
     <SortableList
-      disabledItem={user?.role === 'user'}
       items={items}
       checkIsSelected={checkIsSelected}
       onSelectLayer={onSelectLayer}

@@ -61,7 +61,6 @@ export const useDragLayer = ({
     layers,
     isPageLocked,
     mainLayers,
-    userRole,
   } = useEditor((state) => {
     const hoveredPage = parseInt(Object.keys(state.hoveredLayer)[0]);
     const hoverLayerId = state.hoveredLayer[hoveredPage];
@@ -514,7 +513,7 @@ export const useDragLayer = ({
       setControlBoxData(controlBox);
     }
     setLayerData(data);
-    if (!isContainLockedLayer && !isPageLocked && userRole !== 'user') {
+    if (!isContainLockedLayer && !isPageLocked) {
       isMobile && actions.setDragData(true, Object.keys(data)); // To avoid swipe when dragging
       bindDraggingEvents();
     } else {

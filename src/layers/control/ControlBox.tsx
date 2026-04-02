@@ -31,7 +31,7 @@ const ControlBox: ForwardRefRenderFunction<HTMLDivElement, PropsWithChildren<Res
 ) => {
     const boxRef = useForwardedRef<HTMLDivElement>(ref);
     const { pageIndex } = useContext(PageContext);
-    const { imageEditor, isRotating, isDragging, frameScale, selectState, isGroup, resizeDirection, isPageLocked, userRole } =
+    const { imageEditor, isRotating, isDragging, frameScale, selectState, isGroup, resizeDirection, isPageLocked } =
         useEditor((state) => ({
             isGroup: state.selectedLayers[pageIndex].length > 1,
             imageEditor: state.imageEditor,
@@ -65,7 +65,7 @@ const ControlBox: ForwardRefRenderFunction<HTMLDivElement, PropsWithChildren<Res
                 height: boxSize.height * frameScale,
             }}
         >
-            {!isDragging && !locked && !selectState && !isPageLocked && userRole !== 'user' && (
+            {!isDragging && !locked && !selectState && !isPageLocked && (
                 <Fragment>
                     {!disabled.corners && !isRotating && (
                         <Fragment>

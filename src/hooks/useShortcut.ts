@@ -8,7 +8,7 @@ import { copy } from 'canva-editor/utils/menu/actions/copy';
 import { duplicate } from 'canva-editor/utils/menu/actions/duplicate';
 
 const useShortcut = (frameEle: HTMLElement | null) => {
-  const { actions, state, activePage, rootLayer, scale, selectedLayers, userRole } =
+  const { actions, state, activePage, rootLayer, scale, selectedLayers } =
     useEditor((state) => ({
       rootLayer:
         state.pages[state.activePage] &&
@@ -168,16 +168,16 @@ const useShortcut = (frameEle: HTMLElement | null) => {
           isSelectedLayer && handleDelete();
           break;
         case normalizeKeyName('ArrowLeft'):
-          isSelectedLayer && userRole !== 'user' && actions.moveSelectedLayers('left', 1);
+          isSelectedLayer && actions.moveSelectedLayers('left', 1);
           break;
         case normalizeKeyName('ArrowRight'):
-          isSelectedLayer && userRole !== 'user' && actions.moveSelectedLayers('right', 1);
+          isSelectedLayer && actions.moveSelectedLayers('right', 1);
           break;
         case normalizeKeyName('ArrowUp'):
-          isSelectedLayer && userRole !== 'user' && actions.moveSelectedLayers('top', 1);
+          isSelectedLayer && actions.moveSelectedLayers('top', 1);
           break;
         case normalizeKeyName('ArrowDown'):
-          isSelectedLayer && userRole !== 'user' && actions.moveSelectedLayers('bottom', 1);
+          isSelectedLayer && actions.moveSelectedLayers('bottom', 1);
           break;
         case normalizeKeyName('Mod-0'):
           handleZoomReset();

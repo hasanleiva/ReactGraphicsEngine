@@ -11,13 +11,12 @@ const Notes: React.FC<Props> = ({
   charLimit = 5000,
 }) => {
   const t = useTranslate();
-  const { activePage, pageName, notes, isPageLocked, actions } = useEditor((state) => {
+  const { activePage, pageName, notes, actions } = useEditor((state) => {
     const activePage = state.pages[state.activePage];
     return {
       activePage: state.activePage,
       pageName: activePage.name,
       notes: activePage.notes,
-      isPageLocked: activePage.layers.ROOT.data.locked,
     };
   });
 
@@ -63,7 +62,6 @@ const Notes: React.FC<Props> = ({
           Page {activePage + 1} -&nbsp;
           <EditInlineInput
             text={pageName}
-            disabled={isPageLocked}
             placeholder={t('common.addPageTitle', 'Add page title')}
             onSetText={(newText) => {
               actions.setPageName(activePage, newText);
@@ -74,7 +72,6 @@ const Notes: React.FC<Props> = ({
       <div css={{ height: 'calc(100% - 98px)' }}>
         <textarea
           value={notes}
-          disabled={isPageLocked}
           onChange={handleChange}
           placeholder={placeholder}
           css={{

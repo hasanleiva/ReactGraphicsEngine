@@ -155,12 +155,6 @@ export const ActionMethods = (state: EditorState) => {
     setName: (name: string) => {
       state.name = name;
     },
-    setUserRole: (role: 'admin' | 'user') => {
-      state.userRole = role;
-    },
-    setTemplate: (isTemplate: boolean) => {
-      state.isTemplate = isTemplate;
-    },
     changePageSize: (size: PageSize) => {
       const changeW = size.width - state.pageSize.width;
       const changeH = size.height - state.pageSize.height;
@@ -390,7 +384,6 @@ export const ActionMethods = (state: EditorState) => {
       state.selectedLayers = {};
       state.hoveredLayer = {};
       state.controlBox = undefined;
-      state.isTemplate = false;
       const pages: Page[] = [];
       const decodeLayer = (
         serializedLayer: SerializedLayer,

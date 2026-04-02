@@ -26,7 +26,6 @@ export type EditorProps = {
   onChanges: (changes: any) => void;
   onDesignNameChanges: (name: any) => void;
   onRemove: () => void;
-  userRole?: 'admin' | 'user';
 };
 
 const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
@@ -36,7 +35,6 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
   onChanges,
   onDesignNameChanges,
   onRemove,
-  userRole,
 }) => {
   const version = '1.0.69';
   const { getState, actions, query } = useEditorStore();
@@ -70,7 +68,7 @@ const CanvaEditor: FC<PropsWithChildren<EditorProps>> = ({
 
   return (
     <TranslationContext.Provider value={translationContextValue}>
-      <EditorContext.Provider value={{ config, getState, actions, query, userRole }}>
+      <EditorContext.Provider value={{ config, getState, actions, query }}>
       {!isPreview ? (
         <div
           css={{

@@ -45,7 +45,7 @@ export const useRotateLayer = ({
 }) => {
     const rotateRef = useRef<{ centerX: number; centerY: number; last: CursorPosition; prevDegree: number } | undefined>(undefined);
     const { selectedLayers, selectedLayerIds } = useSelectedLayers();
-    const { scale, controlBox, actions, userRole } = useEditor((state, query) => {
+    const { scale, controlBox, actions } = useEditor((state, query) => {
         const hoverLayerId = state.hoveredLayer[pageIndex];
         return {
             scale: state.scale,
@@ -170,7 +170,6 @@ export const useRotateLayer = ({
         window.removeEventListener('touchend', handleRotateEnd);
     };
     const startRotate = (e: TouchEvent | MouseEvent) => {
-        if (userRole === 'user') return;
         const { clientX, clientY } = getPosition(e);
         const { centerX, centerY } = boundingRect(controlBox.boxSize, controlBox.position, controlBox.rotate);
         rotateRef.current = {

@@ -144,7 +144,7 @@ const CommonSettings = () => {
           </Fragment>
         )}
 
-        {selectedLayerIds.length > 0 && user?.role !== 'user' && (
+        {selectedLayerIds.length > 0 && (
           <>
             <SettingDivider />
             <SettingButton
