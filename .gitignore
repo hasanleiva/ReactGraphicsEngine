@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# VPS server runtime data
+data/
+uploads/
+server/.env

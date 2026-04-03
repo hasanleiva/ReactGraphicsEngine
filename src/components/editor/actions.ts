@@ -975,13 +975,18 @@ export const ActionMethods = (state: EditorState) => {
     ) {
       const layerId = getRandomId();
       const pageSize = state.pageSize;
-      const ratio = pageSize.width / pageSize.height;
       const imgRatio = boxSize.width / boxSize.height;
-      const w =
-        ratio < imgRatio
-          ? pageSize.width * 0.8
-          : pageSize.height * imgRatio * 0.8;
-      const h = w / imgRatio;
+      let w: number, h: number;
+      if (boxSize.width <= pageSize.width && boxSize.height <= pageSize.height) {
+        // Image fits within canvas — use original pixel dimensions
+        w = boxSize.width;
+        h = boxSize.height;
+      } else {
+        // Image is larger than canvas — scale down to fit
+        const ratio = pageSize.width / pageSize.height;
+        w = ratio < imgRatio ? pageSize.width : pageSize.height * imgRatio;
+        h = w / imgRatio;
+      }
       const dl = deserializeLayer({
         type: {
           resolvedName: 'ImageLayer',

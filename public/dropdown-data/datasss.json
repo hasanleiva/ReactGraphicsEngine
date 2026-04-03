@@ -1,0 +1,17 @@
+[
+  {
+    "id": "option-1",
+    "text": "Xorazm",
+    "logo": "https://cdn.sportmonks.com/images/soccer/teams/29/35933.png"
+  },
+  {
+    "id": "option-2",
+    "text": "Paxtakor",
+    "logo": "/public/dropdown-data/navba.png"
+  },
+  {
+    "id": "option-3",
+    "text": "Bunyodkor",
+    "logo": "https://example.com/path/to/image3.png"
+  }
+]

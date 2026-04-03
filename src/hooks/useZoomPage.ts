@@ -373,36 +373,48 @@ export const useZoomPage = (
     }
   };
 
-  useEffect(() => {
-    const updateSize = () => {
-      if (frameRef.current) {
-        const ratio = pageSize.width / pageSize.height;
-        const margin = window.innerWidth <= 900 ? 16 : 56;
-        const w = frameRef.current.clientWidth - margin * 2;
-        const size = {
-          width: w,
-          height: w * ratio,
-        };
-        const scale = Math.min(1, size.width / pageSize.width);
-        actions.setScale(scale);
-        if (isMobile) {
-          const x = (window.innerWidth - pageSize.width * scale - 16 * 2) / 2;
-          const headerHeight = 70;
-          const footerHeight = 72;
-          const offsetTop = 16;
-          const y =
-            (window.innerHeight -
-              pageSize.height * scale -
-              headerHeight -
-              footerHeight -
-              offsetTop) /
-            2;
-          setPageTransform({ scale: 1, x, y });
-        }
+  const updateSize = useCallback(() => {
+    if (frameRef.current) {
+      const ratio = pageSize.width / pageSize.height;
+      const margin = window.innerWidth <= 900 ? 16 : 56;
+      const w = frameRef.current.clientWidth - margin * 2;
+      const size = {
+        width: w,
+        height: w * ratio,
+      };
+      const fitScale = Math.min(1, size.width / pageSize.width);
+      actions.setScale(fitScale);
+      if (isMobile) {
+        const x = (window.innerWidth - pageSize.width * fitScale - 16 * 2) / 2;
+        const headerHeight = 70;
+        const footerHeight = 72;
+        const offsetTop = 16;
+        const y =
+          (window.innerHeight -
+            pageSize.height * fitScale -
+            headerHeight -
+            footerHeight -
+            offsetTop) /
+          2;
+        setPageTransform({ scale: 1, x, y });
       }
-    };
+    }
+  }, [pageSize, actions, setPageTransform]);
+
+  // Run on pageSize change
+  useEffect(() => {
     updateSize();
-  }, [pageSize, setPageTransform]);
+  }, [pageSize]);
+
+  // Also run on window resize and on explicit 'canvaResetZoom' event (e.g. after template load)
+  useEffect(() => {
+    window.addEventListener('resize', updateSize);
+    window.addEventListener('canvaResetZoom', updateSize);
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('canvaResetZoom', updateSize);
+    };
+  }, [updateSize]);
 
   useEffect(() => {
     // if (isSafari) return; // Skipping Safari

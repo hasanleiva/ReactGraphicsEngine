@@ -2,6 +2,7 @@ import { Fragment, PropsWithChildren } from 'react';
 import { useLayer } from '../hooks';
 import { LayerComponent } from 'canva-editor/types';
 import { RootContentProps, RootContent, ImageContentProps } from '.';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export interface RootLayerProps extends Omit<RootContentProps, 'image'> {
     image?: ImageContentProps['image']|null;
@@ -17,6 +18,7 @@ const RootLayer: LayerComponent<PropsWithChildren<RootLayerProps>> = ({
     scale,
 }) => {
     const { actions } = useLayer();
+    const { user } = useAuth();
     return (
         <Fragment>
             <RootContent
@@ -28,6 +30,7 @@ const RootLayer: LayerComponent<PropsWithChildren<RootLayerProps>> = ({
                 image={image}
                 scale={scale}
                 onDoubleClick={() =>
+                    user?.role !== 'user' &&
                     (image) && actions.openImageEditor({ boxSize, position, rotate, image })
                 }
             />

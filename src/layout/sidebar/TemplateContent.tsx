@@ -144,6 +144,8 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       const unpackedData = unpack(data);
       const pages = Array.isArray(unpackedData) ? unpackedData : [unpackedData];
       actions.setData(pages);
+      // Reset zoom to fit after template is applied
+      window.dispatchEvent(new CustomEvent('canvaResetZoom'));
     } catch (err) {
       console.warn('Something went wrong!');
       console.log(err);

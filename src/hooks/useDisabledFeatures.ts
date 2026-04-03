@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { isFrameLayer, isGroupLayer, isShapeLayer, isTextLayer } from 'canva-editor/utils/layer/layers';
 import { useSelectedLayers } from '.';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export const useDisabledFeatures = () => {
+    const { user } = useAuth();
     const { selectedLayers } = useSelectedLayers();
     const scalable = useMemo(
         () => !!selectedLayers.find((layer) => isTextLayer(layer) || isGroupLayer(layer) || isShapeLayer(layer)),
@@ -36,6 +38,17 @@ export const useDisabledFeatures = () => {
                 if (isFrame) disable.scalable = false;
             }
         });
+
+        // User role: all canvas elements are non-movable and non-rotatable.
+        // Resize/rotate handles are hidden entirely.
+        if (user?.role === 'user') {
+            disable.locked = true;
+            disable.rotate = true;
+            disable.corners = true;
+            disable.vertical = true;
+            disable.horizontal = true;
+        }
+
         return disable;
-    }, [selectedLayers]);
+    }, [selectedLayers, user?.role]);
 };

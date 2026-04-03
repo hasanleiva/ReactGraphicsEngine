@@ -6,6 +6,7 @@ import ArrowDownIcon from '../../icons/ArrowDownIcon';
 import ArrowUpIcon from '../../icons/ArrowUpIcon';
 import ImageIcon from '../../icons/ImageIcon';
 import useMobileDetect from 'canva-editor/hooks/useMobileDetect';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const extractTextFromHtml = (html: string) => {
   if (!html) return '';
@@ -334,6 +335,8 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     layers: state.pages[state.activePage] && state.pages[state.activePage].layers,
     activePage: state.activePage,
   }));
+  const { user } = useAuth();
+  const isUserRole = user?.role === 'user';
   const isMobile = useMobileDetect();
 
   const [dropdownDataCache, setDropdownDataCache] = useState<Record<string, DropdownItem[]>>({});
@@ -354,7 +357,7 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       for (const file of dropdownFiles) {
         if (!dropdownDataCache[file]) {
           try {
-            const url = file.startsWith('http') ? file : `https://pub-286821d3f9664551a82643725b87198e.r2.dev/${file}`;
+            const url = file.startsWith('http') ? file : `/dropdown-data/${file}`;
             const response = await axios.get(url);
             setDropdownDataCache(prev => ({ ...prev, [file]: response.data }));
           } catch (error) {
@@ -409,6 +412,26 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       const propName = isMinified ? 'v' : 'text';
       actions.setProp(activePage, layerId, { [propName]: updatedHtml });
     }
+  };
+
+  const handleEditSize = () => {
+    const rootLayer = layers?.['ROOT'];
+    if (!rootLayer) return;
+    const image = rootLayer.data.props.image || (rootLayer.data.props as any).p;
+    if (!image?.url) return;
+    const { boxSize, position, rotate } = rootLayer.data.props;
+    actions.selectLayers(activePage, 'ROOT');
+    actions.openImageEditor(activePage, 'ROOT', {
+      boxSize,
+      position: position || { x: 0, y: 0 },
+      rotate: rotate || 0,
+      image: {
+        boxSize: image.boxSize || boxSize,
+        position: image.position || { x: 0, y: 0 },
+        rotate: image.rotate || 0,
+        url: image.url,
+      },
+    });
   };
 
   const handleImageChange = (layerId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -540,6 +563,32 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             label="Background Image"
             onChange={(e) => handleImageChange('ROOT', e)}
           />
+          {isUserRole && (() => {
+            const rootLayer = layers?.['ROOT'];
+            const hasImage = !!(rootLayer?.data.props.image?.url || (rootLayer?.data.props as any)?.p?.url);
+            return (
+              <button
+                onClick={handleEditSize}
+                disabled={!hasImage}
+                css={{
+                  width: '100%',
+                  marginTop: 8,
+                  padding: '8px 12px',
+                  backgroundColor: hasImage ? '#2563eb' : '#e5e7eb',
+                  color: hasImage ? '#ffffff' : '#9ca3af',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: hasImage ? 'pointer' : 'not-allowed',
+                  transition: 'background-color 0.2s',
+                  '&:hover': hasImage ? { backgroundColor: '#1d4ed8' } : {},
+                }}
+              >
+                Edit Size
+              </button>
+            );
+          })()}
         </CollapsibleSection>
 
         {imageLayers.length > 0 && (

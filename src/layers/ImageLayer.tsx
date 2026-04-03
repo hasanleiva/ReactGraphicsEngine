@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLayer, useEditor, useSelectedLayers } from '../hooks';
 import { Delta, BoxSize, LayerComponent } from 'canva-editor/types';
 import { ImageContentProps, ImageContent } from '.';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export interface ImageLayerProps extends ImageContentProps {
     image: {
@@ -18,6 +19,7 @@ const ImageLayer: LayerComponent<ImageLayerProps> = ({ image, boxSize, position,
     const { actions, pageIndex, id } = useLayer();
     const { selectedLayerIds } = useSelectedLayers();
     const { imageEditor } = useEditor((state) => ({ imageEditor: state.imageEditor }));
+    const { user } = useAuth();
     const [imageData, setImageData] = useState<ImageLayerProps['image']>({ ...image, url: image.thumb });
     useEffect(() => {
         const img = new Image();
@@ -40,7 +42,9 @@ const ImageLayer: LayerComponent<ImageLayerProps> = ({ image, boxSize, position,
                         : undefined,
             }}
             onDoubleClick={() =>
-                selectedLayerIds.includes(id) && actions.openImageEditor({ position, rotate, boxSize, image })
+                user?.role !== 'user' &&
+                selectedLayerIds.includes(id) &&
+                actions.openImageEditor({ position, rotate, boxSize, image })
             }
         >
             <ImageContent image={imageData} boxSize={boxSize} rotate={rotate} position={position} />

@@ -3,6 +3,7 @@ import { useEditor, useLayer, useSelectedLayers } from '../hooks';
 import { createEditor } from 'canva-editor/components/text-editor/core/helper/createEditor';
 import { LayerComponent } from 'canva-editor/types';
 import { TextContentProps, TextContent } from '.';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export type TextLayerProps = TextContentProps;
 
@@ -22,15 +23,17 @@ const TextLayer: LayerComponent<TextLayerProps> = ({
     const { actions: editorActions, textEditor } = useEditor((state) => ({
         textEditor: state.textEditor,
     }));
+    const { user } = useAuth();
     useEffect(() => {
         const editor = createEditor({ content: text });
         editor && actions.setTextEditor(editor);
     }, []);
     const handleStartUpdate = useCallback(() => {
+        if (user?.role === 'user') return;
         if (selectedLayerIds.includes(id)) {
             actions.openTextEditor();
         }
-    }, [editorActions, selectedLayerIds]);
+    }, [editorActions, selectedLayerIds, user?.role]);
 
     const isEditing = useMemo(() => {
         if (!textEditor) return false;

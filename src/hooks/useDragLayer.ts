@@ -1,6 +1,7 @@
 import { cloneDeep, throttle } from 'lodash';
 import { useEditor } from './useEditor';
 import { isMobile } from 'react-device-detect';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 import { RefObject, useEffect, useRef } from 'react';
 import { useLinkedRef } from './useLinkedRef';
 import { useTrackingShiftKey } from './useTrackingShiftKey';
@@ -48,6 +49,7 @@ export const useDragLayer = ({
   const shiftKeyRef = useTrackingShiftKey();
   const [, getLayerData, setLayerData] = useLinkedRef<LayerDataRef>({});
   const [, getControlBoxData, setControlBoxData] = useLinkedRef<BoxData>();
+  const { user } = useAuth();
   const { selectedLayers, selectedLayerIds } = useSelectedLayers();
   const {
     actions,
@@ -513,7 +515,7 @@ export const useDragLayer = ({
       setControlBoxData(controlBox);
     }
     setLayerData(data);
-    if (!isContainLockedLayer && !isPageLocked) {
+    if (!isContainLockedLayer && !isPageLocked && user?.role !== 'user') {
       isMobile && actions.setDragData(true, Object.keys(data)); // To avoid swipe when dragging
       bindDraggingEvents();
     } else {

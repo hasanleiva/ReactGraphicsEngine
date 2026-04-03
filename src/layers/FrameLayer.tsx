@@ -2,6 +2,7 @@ import { LayerComponent } from 'canva-editor/types';
 import { FrameContent, FrameContentProps } from './content/FrameContent';
 import { useEditor, useLayer, useSelectedLayers } from 'canva-editor/hooks';
 import { useEffect, useState } from 'react';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 export type FrameLayerProps = FrameContentProps;
 const FrameLayer: LayerComponent<FrameLayerProps> = ({
@@ -20,6 +21,7 @@ const FrameLayer: LayerComponent<FrameLayerProps> = ({
   const { imageEditor } = useEditor((state) => ({
     imageEditor: state.imageEditor,
   }));
+  const { user } = useAuth();
   useEffect(() => {
     if (image) {
       const img = new Image();
@@ -42,6 +44,7 @@ const FrameLayer: LayerComponent<FrameLayerProps> = ({
   }, [image, color, gradientBackground]);
 
   const handleDoubleClick = () => {
+    if (user?.role === 'user') return;
     image &&
       selectedLayerIds.includes(id) &&
       actions.openImageEditor({
