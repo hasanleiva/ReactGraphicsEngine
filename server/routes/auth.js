@@ -13,7 +13,10 @@ const COOKIE_OPTIONS = {
 };
 
 function cookieOptions() {
-  return { ...COOKIE_OPTIONS, secure: process.env.NODE_ENV === 'production' };
+  // Use COOKIE_SECURE=true only when HTTPS is available.
+  // Defaults to false so HTTP-only deployments (no SSL) work correctly.
+  const secure = process.env.COOKIE_SECURE === 'true';
+  return { ...COOKIE_OPTIONS, secure };
 }
 
 // POST /api/auth/signup
