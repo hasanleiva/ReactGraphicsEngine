@@ -375,16 +375,11 @@ export const useZoomPage = (
 
   const updateSize = useCallback(() => {
     if (frameRef.current) {
-      const ratio = pageSize.width / pageSize.height;
-      const margin = window.innerWidth <= 900 ? 16 : 56;
-      const w = frameRef.current.clientWidth - margin * 2;
-      const size = {
-        width: w,
-        height: w * ratio,
-      };
-      const fitScale = Math.min(1, size.width / pageSize.width);
-      actions.setScale(fitScale);
       if (isMobile) {
+        const margin = 16;
+        const availableW = frameRef.current.clientWidth - margin * 2;
+        const fitScale = Math.min(1, availableW / pageSize.width);
+        actions.setScale(fitScale);
         const x = (window.innerWidth - pageSize.width * fitScale - 16 * 2) / 2;
         const headerHeight = 70;
         const footerHeight = 72;
@@ -397,6 +392,17 @@ export const useZoomPage = (
             offsetTop) /
           2;
         setPageTransform({ scale: 1, x, y });
+      } else {
+        // Fit canvas inside the visible container, accounting for layout margins.
+        // horizontalMargin: 56px left spacer + 56px right spacer = 112px
+        // verticalMargin: 48px top + 48px bottom canvas wrapper margin = 96px
+        const PADDING = 0.875; // 12.5% breathing room (within the 10–15% requirement)
+        const availableW = frameRef.current.clientWidth - 112;
+        const availableH = frameRef.current.clientHeight - 96;
+        const scaleByWidth = availableW / pageSize.width;
+        const scaleByHeight = availableH > 0 ? availableH / pageSize.height : scaleByWidth;
+        const fitScale = Math.min(scaleByWidth, scaleByHeight) * PADDING;
+        actions.setScale(fitScale);
       }
     }
   }, [pageSize, actions, setPageTransform]);

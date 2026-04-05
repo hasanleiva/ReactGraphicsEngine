@@ -156,55 +156,37 @@ const TextInputItem: FC<{
   fontName?: string;
   onChange: (val: string) => void;
 }> = ({ label, value, fontName, onChange }) => {
-  const isMultiline = value.includes('\n') || value.length > 50;
+  // Rows grow as the user presses Enter — always a textarea so focus/cursor
+  // never gets lost on type switching, and Enter naturally moves the cursor down.
+  const rows = Math.max(1, (value ?? '').split('\n').length);
 
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <label css={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </label>
-      {isMultiline ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          rows={3}
-          css={{
-            padding: '10px 12px',
-            backgroundColor: '#f3f4f6',
-            border: '1px solid #e5e7eb',
-            borderRadius: 6,
-            color: '#111827',
-            fontSize: 14,
-            outline: 'none',
-            resize: 'vertical',
-            transition: 'border-color 0.2s',
-            '&:focus': {
-              borderColor: '#3b82f6',
-              backgroundColor: '#ffffff',
-            }
-          }}
-        />
-      ) : (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          css={{
-            padding: '10px 12px',
-            backgroundColor: '#f3f4f6',
-            border: '1px solid #e5e7eb',
-            borderRadius: 6,
-            color: '#111827',
-            fontSize: 14,
-            outline: 'none',
-            transition: 'border-color 0.2s',
-            '&:focus': {
-              borderColor: '#3b82f6',
-              backgroundColor: '#ffffff',
-            }
-          }}
-        />
-      )}
+      <textarea
+        value={value}
+        rows={rows}
+        onChange={(e) => onChange(e.target.value)}
+        css={{
+          padding: '10px 12px',
+          backgroundColor: '#f3f4f6',
+          border: '1px solid #e5e7eb',
+          borderRadius: 6,
+          color: '#111827',
+          fontSize: 14,
+          outline: 'none',
+          resize: 'none',
+          fontFamily: 'inherit',
+          lineHeight: 1.5,
+          transition: 'border-color 0.2s',
+          '&:focus': {
+            borderColor: '#3b82f6',
+            backgroundColor: '#ffffff',
+          }
+        }}
+      />
       {fontName && (
         <div css={{
           display: 'inline-flex',

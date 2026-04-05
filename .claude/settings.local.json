@@ -4,7 +4,9 @@
       "Bash(node -e \"const { DatabaseSync } = require\\(''node:sqlite''\\); const db = new DatabaseSync\\('':memory:''\\); db.exec\\(''CREATE TABLE t \\(x TEXT\\)''\\); console.log\\(''node:sqlite works!''\\);\")",
       "Bash(node -e \":*)",
       "Bash(npm install:*)",
-      "Bash(timeout 10 npx vite --port 5173)"
+      "Bash(timeout 10 npx vite --port 5173)",
+      "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git status --short; git remote -v; Write-Host ''DONE''\")",
+      "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git add -A; git status --short; Write-Host ''STAGED''\")"
     ]
   }
 }

@@ -48,7 +48,13 @@ const TextEditor = () => {
                     height: boxSize.height / scale,
                     transform: `scale(${scale * editorScale})`,
                     transformOrigin: '0 0',
+                    overflow: 'hidden',
                     p: {
+                        // Keep each paragraph on one line while editing.
+                        // CSS-level whiteSpace doesn't trigger ProseMirror DOM
+                        // reconciliation so it never causes a feedback loop.
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
                         '&:before': {
                             ...getTextEffectStyle(
                                 effect?.name || 'none',

@@ -14,7 +14,6 @@ import ResizeIcon from 'canva-editor/icons/ResizeIcon';
 import LockIcon from 'canva-editor/icons/LockIcon';
 import LockOpenIcon from 'canva-editor/icons/LockOpenIcon';
 import SyncedIcon from 'canva-editor/icons/SyncedIcon';
-import HelpIcon from 'canva-editor/icons/HelpIcon';
 import ConfigurationIcon from 'canva-editor/icons/ConfigurationIcon';
 import ExportIcon from 'canva-editor/icons/ExportIcon';
 import EditorButton from 'canva-editor/components/EditorButton';
@@ -235,16 +234,6 @@ const HeaderFileMenu: FC<Props> = ({ designName, onRemove }) => {
       icon: <span style={{ color: '#ed213a', paddingRight: 6 }}><TrashIcon /></span>,
       action: () => {
         onRemove();
-      },
-    },
-    { label: 'Divider', type: 'divider' },
-    {
-      label: t('header.help', 'Help'),
-      type: 'normal',
-      icon: <HelpIcon />,
-      shortcut: '⌘H',
-      action: () => {
-        actions.goToGithubPage();
       },
     },
   ];

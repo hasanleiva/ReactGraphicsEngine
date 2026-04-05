@@ -1,6 +1,7 @@
 import { FC, useEffect } from 'react';
 import { EffectSettings, FontData, LayerComponentProps } from '../../types';
 import { getTextEffectStyle } from '../text/textEffect';
+import { fitParagraphsToWidth } from '../text/fitText';
 
 export interface TextContentProps extends LayerComponentProps {
   id: string;
@@ -30,9 +31,29 @@ export const TextContent: FC<TextContentProps> = ({
   );
   const textId = `text-${id}`;
   useEffect(() => {
-    const testEl = document.getElementById(textId);
-    if (testEl) {
-      testEl.innerHTML = text;
+    const el = document.getElementById(textId);
+    if (!el) return;
+
+    // Reset any whole-element shrink applied in a previous render
+    el.style.transform = '';
+    el.style.transformOrigin = '';
+    el.innerHTML = text;
+
+    // Step 1: Fit each paragraph horizontally (no wrapping within a line;
+    // only Enter creates a new line).
+    fitParagraphsToWidth(el);
+
+    // Step 2: If all paragraphs together still overflow the container height,
+    // scale the whole element down to fit vertically.
+    const container = el.parentElement;
+    if (container) {
+      const totalH = el.offsetHeight;
+      const containerH = container.clientHeight;
+      if (totalH > containerH && containerH > 0) {
+        const scale = containerH / totalH;
+        el.style.transform = `scale(${scale})`;
+        el.style.transformOrigin = 'top left';
+      }
     }
   }, [text]);
   return (

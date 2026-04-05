@@ -11,6 +11,38 @@ import axios from 'axios';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 import { useAuth } from '../../contexts/AuthContext';
 
+const LoadingOverlay: FC<{ progress: number }> = ({ progress }) => (
+  <div
+    css={{
+      position: 'absolute',
+      inset: 0,
+      background: 'rgba(0,0,0,0.6)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 4,
+      zIndex: 10,
+      gap: 8,
+    }}
+  >
+    <span css={{ color: '#fff', fontSize: 16, fontWeight: 700, letterSpacing: 1 }}>
+      {progress}%
+    </span>
+    <div css={{ width: '65%', height: 4, background: 'rgba(255,255,255,0.25)', borderRadius: 2 }}>
+      <div
+        css={{
+          height: '100%',
+          background: '#fff',
+          borderRadius: 2,
+          transition: 'width 0.2s ease',
+          width: `${progress}%`,
+        }}
+      />
+    </div>
+  </div>
+);
+
 interface Template {
   img: ImageData;
   data: Array<SerializedPage> | SerializedPage;
@@ -34,6 +66,8 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [loadingCard, setLoadingCard] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   const packs = useMemo(() => {
     const grouped: Record<string, string[]> = { 'Default': [] };
@@ -95,7 +129,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         if (res.data.data) {
           setTemplates((templates) => [...templates, ...res.data.data]);
         }
-        if (res.data.data.length > 0) {
+        if (res.data.data?.length > 0) {
           dataRef.current = false;
         }
       } catch (err) {
@@ -155,12 +189,35 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
+  const handleSearchTemplateClick = async (item: Template, key: string) => {
+    setLoadingCard(key);
+    setLoadingProgress(20);
+    // unpack + setData is synchronous; give the browser a tick to render the overlay
+    await new Promise((r) => setTimeout(r, 16));
+    setLoadingProgress(70);
+    await addPages(item.data);
+    setLoadingProgress(100);
+    setTimeout(() => { setLoadingCard(null); setLoadingProgress(0); }, 350);
+  };
+
   const loadR2Template = async (id: string) => {
+    setLoadingCard(id);
+    setLoadingProgress(0);
     try {
       setIsLoading(true);
-      const res = await axios.get(`/api/templates/get/${id}`);
+      const res = await axios.get(`/api/templates/get/${id}`, {
+        onDownloadProgress: (e) => {
+          if (e.total) {
+            setLoadingProgress(Math.round((e.loaded / e.total) * 85));
+          } else {
+            setLoadingProgress((prev) => Math.min(prev + 12, 80));
+          }
+        },
+      });
       if (res.data.success) {
-        addPages(res.data.content);
+        setLoadingProgress(90);
+        await addPages(res.data.content);
+        setLoadingProgress(100);
       } else {
         alert('Failed to load template');
       }
@@ -169,6 +226,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       alert('Failed to load template');
     } finally {
       setIsLoading(false);
+      setTimeout(() => { setLoadingCard(null); setLoadingProgress(0); }, 350);
     }
   };
 
@@ -262,31 +320,36 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                   {packName} ({packs[packName].length})
                 </div>
               ))}
-              {templates.map((item, index) => (
-                <div
-                  key={index}
-                  css={{ cursor: 'pointer', position: 'relative' }}
-                  onClick={() => addPages(item.data)}
-                >
-                  {!!item?.img && <img src={item?.img?.url} width={item?.img?.width} height={item?.img?.height} loading='lazy' />}
-                  {item.pages > 1 && (
-                    <span
-                      css={{
-                        position: 'absolute',
-                        bottom: 5,
-                        right: 5,
-                        backgroundColor: 'rgba(17,23,29,.6)',
-                        padding: '1px 6px',
-                        borderRadius: 6,
-                        color: '#fff',
-                        fontSize: 10,
-                      }}
-                    >
-                      {item.pages}
-                    </span>
-                  )}
-                </div>
-              ))}
+              {templates.map((item, index) => {
+                const cardKey = `template-${index}`;
+                const isCardLoading = loadingCard === cardKey;
+                return (
+                  <div
+                    key={index}
+                    css={{ cursor: 'pointer', position: 'relative' }}
+                    onClick={() => !loadingCard && handleSearchTemplateClick(item, cardKey)}
+                  >
+                    {!!item?.img && <img src={item?.img?.url} width={item?.img?.width} height={item?.img?.height} loading='lazy' />}
+                    {item.pages > 1 && (
+                      <span
+                        css={{
+                          position: 'absolute',
+                          bottom: 5,
+                          right: 5,
+                          backgroundColor: 'rgba(17,23,29,.6)',
+                          padding: '1px 6px',
+                          borderRadius: 6,
+                          color: '#fff',
+                          fontSize: 10,
+                        }}
+                      >
+                        {item.pages}
+                      </span>
+                    )}
+                    {isCardLoading && <LoadingOverlay progress={loadingProgress} />}
+                  </div>
+                );
+              })}
             </>
           ) : (
             <>
@@ -311,31 +374,37 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
               >
                 ← Back to Packs
               </div>
-              {packs[selectedPack]?.map((id) => (
-                <div
-                  key={id}
-                  css={{
-                    cursor: 'pointer',
-                    padding: '16px',
-                    background: '#f0f0f0',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    wordBreak: 'break-all',
-                    minHeight: '100px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    transition: 'transform 0.2s',
-                    ':hover': {
-                      transform: 'scale(1.02)'
-                    }
-                  }}
-                  onClick={() => loadR2Template(id)}
-                >
-                  {id.split('/').pop()}
-                </div>
-              ))}
+              {packs[selectedPack]?.map((id) => {
+                const isCardLoading = loadingCard === id;
+                return (
+                  <div
+                    key={id}
+                    css={{
+                      cursor: 'pointer',
+                      padding: '16px',
+                      background: '#f0f0f0',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      wordBreak: 'break-all',
+                      minHeight: '100px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      ':hover': {
+                        transform: isCardLoading ? 'none' : 'scale(1.02)',
+                      },
+                    }}
+                    onClick={() => !loadingCard && loadR2Template(id)}
+                  >
+                    {id.split('/').pop()}
+                    {isCardLoading && <LoadingOverlay progress={loadingProgress} />}
+                  </div>
+                );
+              })}
             </>
           )}
           {isLoading && !selectedPack && <div>{t('common.loading', 'Loading...')}</div>}

@@ -13,12 +13,12 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "homepage": "https://www.canvaclone.com",
+  "homepage": "#",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kenvinlu/canva-editor"
+    "url": "#"
   },
-  "license": "MIT License with No Resale Clause",
+  "license": "MIT License",
   "keywords": [
     "canva clone",
     "canva editor",
@@ -135,6 +135,6 @@
     "vite-plugin-linter": "^3.0.1"
   },
   "bugs": {
-    "url": "https://github.com/kenvinlu/canva-editor/issues"
+    "url": "#"
   }
 }

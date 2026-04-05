@@ -111,11 +111,18 @@ const DesignFrame: FC<DesignFrameProps> = ({ data, onChanges }) => {
     actions.setData(serializedData);
 
     setTimeout(() => {
-      const maxInitScale = 0.5;
-      const initScale =
-        ((frameRef?.current?.offsetWidth || 0) - (isMobile ? 32 : 112)) /
-        pageSize.width; // Padding 16x2
-      actions.setScale(initScale > maxInitScale ? maxInitScale : initScale);
+      if (!frameRef.current) return;
+      const PADDING = 0.875;
+      if (isMobile) {
+        const availableW = frameRef.current.offsetWidth - 32;
+        actions.setScale(Math.min(1, availableW / pageSize.width));
+      } else {
+        const availableW = frameRef.current.offsetWidth - 112;
+        const availableH = frameRef.current.offsetHeight - 96;
+        const scaleByWidth = availableW / pageSize.width;
+        const scaleByHeight = availableH > 0 ? availableH / pageSize.height : scaleByWidth;
+        actions.setScale(Math.min(scaleByWidth, scaleByHeight) * PADDING);
+      }
     }, 16);
   }, [data, actions]);
 
