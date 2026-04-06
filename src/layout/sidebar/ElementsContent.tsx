@@ -313,9 +313,10 @@ const DropdownItemComponent: FC<{
 };
 
 const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { layers, actions, activePage } = useEditor((state) => ({
+  const { layers, actions, activePage, pageSize } = useEditor((state) => ({
     layers: state.pages[state.activePage] && state.pages[state.activePage].layers,
     activePage: state.activePage,
+    pageSize: state.pageSize,
   }));
   const { user } = useAuth();
   const isUserRole = user?.role === 'user';
@@ -427,16 +428,35 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         if (layerId === 'ROOT') {
           const layer = layers['ROOT'];
           if (layer) {
-            const isMinified = (layer.data.props as any).p !== undefined && layer.data.props.image === undefined;
-            const propName = isMinified ? 'p' : 'image';
-            const currentImage = (layer.data.props as any)[propName] || {};
-            actions.setProp(activePage, layerId, {
-              [propName]: {
-                ...currentImage,
-                url,
-                thumb: url,
-              },
-            });
+            // Apply the same "cover" logic as "Set image as background":
+            // scale the image to fill the canvas while preserving aspect ratio,
+            // centering it so no empty edges appear.
+            const img = new window.Image();
+            img.onload = () => {
+              const imageRatio = img.naturalWidth / img.naturalHeight;
+              const canvasRatio = pageSize.width / pageSize.height;
+              let bgBoxSize: { width: number; height: number };
+              let bgPosition: { x: number; y: number };
+              if (canvasRatio > imageRatio) {
+                bgBoxSize = { width: pageSize.width, height: pageSize.width / imageRatio };
+                bgPosition = { x: 0, y: (bgBoxSize.height - pageSize.height) / -2 };
+              } else {
+                bgBoxSize = { width: pageSize.height * imageRatio, height: pageSize.height };
+                bgPosition = { x: (bgBoxSize.width - pageSize.width) / -2, y: 0 };
+              }
+              const isMinified = (layer.data.props as any).p !== undefined && layer.data.props.image === undefined;
+              const propName = isMinified ? 'p' : 'image';
+              actions.setProp(activePage, layerId, {
+                [propName]: {
+                  url,
+                  thumb: url,
+                  boxSize: bgBoxSize,
+                  position: bgPosition,
+                  rotate: 0,
+                },
+              });
+            };
+            img.src = url;
           }
           return;
         }
