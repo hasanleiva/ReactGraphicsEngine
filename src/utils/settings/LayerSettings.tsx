@@ -10,8 +10,10 @@ import { TextLayerProps } from 'canva-editor/layers/TextLayer';
 import { Layer } from 'canva-editor/types';
 import { isRootLayer, isTextLayer, isShapeLayer, isFrameLayer } from '../layer/layers';
 import { FrameLayerProps } from 'canva-editor/layers/FrameLayer';
+import { useAuth } from 'canva-editor/contexts/AuthContext';
 
 const LayerSettings = () => {
+    const { user } = useAuth();
     const { selectedLayers, selectedLayerIds } = useSelectedLayers();
     const { actions, sidebar, isPageLocked } = useEditor((state) => ({
         sidebar: state.sidebar,
@@ -69,6 +71,10 @@ const LayerSettings = () => {
             }
         }
     }, [sidebar, selectedLayerIds]);
+    if (user?.role === 'user') {
+        return null;
+    }
+
     return (
         <div
             css={{
