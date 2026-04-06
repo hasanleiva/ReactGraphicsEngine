@@ -186,6 +186,8 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     }
     if (isMobile) {
       onClose();
+    } else if (user?.role === 'user') {
+      actions.setSidebarTab('Elements');
     }
   };
 
