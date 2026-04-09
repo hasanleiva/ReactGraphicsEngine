@@ -312,6 +312,10 @@ const DropdownItemComponent: FC<{
   );
 };
 
+type UnifiedItem =
+  | { kind: 'text'; layer: ReturnType<typeof Object.values>[0] }
+  | { kind: 'dropdown'; groupKey: string; layers: ReturnType<typeof Object.values>[0][] };
+
 const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { layers, actions, activePage, pageSize } = useEditor((state) => ({
     layers: state.pages[state.activePage] && state.pages[state.activePage].layers,
@@ -528,10 +532,6 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const orderedIds = layers['ROOT'] ? getOrderedLayerIds('ROOT') : [];
 
   // Build a single unified ordered list of text + dropdown items, in canvas order
-  type UnifiedItem =
-    | { kind: 'text'; layer: (typeof editableLayers)[0] }
-    | { kind: 'dropdown'; groupKey: string; layers: (typeof editableLayers) };
-
   const unifiedItems: UnifiedItem[] = [];
   const seenDropdownKeys = new Set<string>();
 

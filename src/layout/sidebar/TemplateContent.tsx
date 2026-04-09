@@ -220,6 +220,7 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         setLoadingProgress(90);
         await addPages(res.data.content);
         setLoadingProgress(100);
+        window.dispatchEvent(new CustomEvent('canvaTemplateLoaded', { detail: { id } }));
       } else {
         alert('Failed to load template');
       }

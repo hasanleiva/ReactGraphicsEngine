@@ -6,7 +6,12 @@
       "Bash(npm install:*)",
       "Bash(timeout 10 npx vite --port 5173)",
       "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git status --short; git remote -v; Write-Host ''DONE''\")",
-      "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git add -A; git status --short; Write-Host ''STAGED''\")"
+      "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git add -A; git status --short; Write-Host ''STAGED''\")",
+      "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git commit -m ''feat: UI improvements, text shrink-on-overflow, zoom fit, loading indicators:*)",
+      "Bash(powershell -NonInteractive -Command \"Set-Location ''C:\\\\MYFILES\\\\Github_repo\\\\React-Canva-editor-srcfold''; git push new-origin main 2>&1; Write-Host ''PUSH_DONE''\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -22,6 +22,7 @@ import ExportIcon from 'canva-editor/icons/ExportIcon';
 import { useTranslate } from 'canva-editor/contexts/TranslationContext';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { dataMapping, pack } from 'canva-editor/utils/minifier';
 
 const Button = styled('button')`
   display: flex;
@@ -85,6 +86,31 @@ const HeaderLayout: ForwardRefRenderFunction<
   const { user, setShowAuthPopup, setShowSettingsPopup, setUser } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const id = (e as CustomEvent<{ id: string }>).detail?.id;
+      if (id) setCurrentTemplateId(id);
+    };
+    window.addEventListener('canvaTemplateLoaded', handler);
+    return () => window.removeEventListener('canvaTemplateLoaded', handler);
+  }, []);
+
+  const handleUserSave = async () => {
+    if (!currentTemplateId || isSaving) return;
+    setIsSaving(true);
+    try {
+      const content = pack(query.serialize(), dataMapping)[0];
+      await axios.post('/api/templates/save-user', { id: currentTemplateId, content });
+    } catch (err) {
+      console.error('Save failed', err);
+      alert('Failed to save');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -226,6 +252,25 @@ const HeaderLayout: ForwardRefRenderFunction<
             >
               <SettingDivider background="hsla(0,0%,100%,.15)" />
             </div>
+            {user?.role === 'user' && currentTemplateId && (
+              <>
+                <Button
+                  onClick={handleUserSave}
+                  disabled={isSaving}
+                  css={{ opacity: isSaving ? 0.6 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
+                >
+                  <div css={{ fontSize: 20 }}>
+                    {isSaving ? <SyncingIcon /> : <SyncedIcon />}
+                  </div>
+                  <span css={{ marginRight: 4, marginLeft: 4 }}>
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </span>
+                </Button>
+                <div css={{ margin: '0 8px' }}>
+                  <SettingDivider background="hsla(0,0%,100%,.15)" />
+                </div>
+              </>
+            )}
             <Button
               onClick={() => {
                 actions.fireDownloadPNGCmd(0);

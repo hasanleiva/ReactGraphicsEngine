@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -89,6 +89,31 @@ router.post('/save', requireAdmin, (req, res) => {
 
     if (!fs.existsSync(fileDir)) {
       fs.mkdirSync(fileDir, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, JSON.stringify(content));
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/templates/save-user — any authenticated user can overwrite an EXISTING template
+router.post('/save-user', requireAuth, (req, res) => {
+  try {
+    const { id, content } = req.body;
+    if (!id || content === undefined) {
+      return res.status(400).json({ error: 'id and content required' });
+    }
+
+    const safe = safePath(id);
+    if (!safe) {
+      return res.status(400).json({ error: 'Invalid id' });
+    }
+
+    const filePath = path.join(TEMPLATES_DIR, `${safe}.json`);
+    if (!fs.existsSync(filePath)) {
+      return res.status(403).json({ error: 'Template not found — users cannot create new templates' });
     }
 
     fs.writeFileSync(filePath, JSON.stringify(content));
