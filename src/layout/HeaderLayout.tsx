@@ -98,6 +98,23 @@ const HeaderLayout: ForwardRefRenderFunction<
     return () => window.removeEventListener('canvaTemplateLoaded', handler);
   }, []);
 
+  const handleRemove = async () => {
+    if (!currentTemplateId) {
+      onRemove();
+      return;
+    }
+    if (!window.confirm(`Delete template "${currentTemplateId}"? This cannot be undone.`)) return;
+    try {
+      await axios.delete('/api/templates/delete', { data: { id: currentTemplateId } });
+      setCurrentTemplateId(null);
+      window.dispatchEvent(new CustomEvent('canvaTemplateDeleted', { detail: { id: currentTemplateId } }));
+      onRemove();
+    } catch (err) {
+      console.error('Delete failed', err);
+      alert('Failed to delete template');
+    }
+  };
+
   const handleUserSave = async () => {
     if (!currentTemplateId || isSaving) return;
     setIsSaving(true);
@@ -167,7 +184,7 @@ const HeaderLayout: ForwardRefRenderFunction<
       )}
       <div css={{ marginRight: 'auto' }}>
         <div css={{ margin: isMobile ? '0 16px 0 0' : '0 16px' }}>
-          <HeaderFileMenu designName={name} onRemove={onRemove} />
+          <HeaderFileMenu designName={name} onRemove={handleRemove} />
         </div>
       </div>
       <div

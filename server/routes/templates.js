@@ -98,6 +98,35 @@ router.post('/save', requireAdmin, (req, res) => {
   }
 });
 
+// DELETE /api/templates/delete — admin only
+router.delete('/delete', requireAdmin, (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'id required' });
+
+    const safe = safePath(id);
+    if (!safe) return res.status(400).json({ error: 'Invalid id' });
+
+    const filePath = path.join(TEMPLATES_DIR, `${safe}.json`);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
+
+    fs.unlinkSync(filePath);
+
+    // Remove empty parent directories (up to TEMPLATES_DIR)
+    let dir = path.dirname(filePath);
+    while (dir !== TEMPLATES_DIR) {
+      if (fs.readdirSync(dir).length === 0) {
+        fs.rmdirSync(dir);
+        dir = path.dirname(dir);
+      } else break;
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /api/templates/save-user — any authenticated user can overwrite an EXISTING template
 router.post('/save-user', requireAuth, (req, res) => {
   try {

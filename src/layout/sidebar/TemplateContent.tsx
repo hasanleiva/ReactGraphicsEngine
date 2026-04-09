@@ -148,6 +148,12 @@ const TemplateContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [offset, keyword]);
 
   useEffect(() => {
+    const handler = () => loadR2Templates();
+    window.addEventListener('canvaTemplateDeleted', handler);
+    return () => window.removeEventListener('canvaTemplateDeleted', handler);
+  }, []);
+
+  useEffect(() => {
     const handleLoadMore = async (e: Event) => {
       const node = e.target as HTMLDivElement;
       if (
