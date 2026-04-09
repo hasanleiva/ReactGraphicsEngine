@@ -574,7 +574,7 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       </div>
 
       <div css={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', overflowX: 'hidden', flexGrow: 1 }}>
-        <CollapsibleSection title="Background Image" dotColor="#10b981">
+        <CollapsibleSection title="Background Image" dotColor="#10b981" defaultOpen={false}>
           <ImageUploadItem
             key="ROOT"
             label="Background Image"
@@ -631,14 +631,11 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
                 const name = layer.data.props.name || (layer.data.props as any).a;
                 const text = layer.data.props.text || (layer.data.props as any).v;
                 const plainText = extractTextFromHtml(text || '');
-                const fonts = layer.data.props.fonts || (layer.data.props as any).f;
-                const fontName = fonts && fonts.length > 0 ? fonts[0].name : undefined;
                 return (
                   <TextInputItem
                     key={layer.id}
                     label={name || 'Text Element'}
                     value={plainText}
-                    fontName={fontName}
                     onChange={(val) => handleTextChange(layer.id, text || '', val)}
                   />
                 );
