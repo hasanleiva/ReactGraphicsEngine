@@ -527,17 +527,32 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const orderedIds = layers['ROOT'] ? getOrderedLayerIds('ROOT') : [];
 
-  const dropdownGroupKeys = Object.keys(dropdownGroups).sort((a, b) => {
-    const minIndexA = Math.min(...dropdownGroups[a].map(l => {
-      const idx = orderedIds.indexOf(l.id);
-      return idx === -1 ? Infinity : idx;
-    }));
-    const minIndexB = Math.min(...dropdownGroups[b].map(l => {
-      const idx = orderedIds.indexOf(l.id);
-      return idx === -1 ? Infinity : idx;
-    }));
-    return minIndexA - minIndexB;
-  });
+  // Build a single unified ordered list of text + dropdown items, in canvas order
+  type UnifiedItem =
+    | { kind: 'text'; layer: (typeof editableLayers)[0] }
+    | { kind: 'dropdown'; groupKey: string; layers: (typeof editableLayers) };
+
+  const unifiedItems: UnifiedItem[] = [];
+  const seenDropdownKeys = new Set<string>();
+
+  for (const id of orderedIds) {
+    const layer = layers[id];
+    if (!layer) continue;
+    const elementType = layer.data.props.elementType || (layer.data.props as any).aq;
+    if (!elementType) continue;
+
+    if (elementType === 'input text') {
+      unifiedItems.push({ kind: 'text', layer });
+    } else if (elementType === 'dropdown') {
+      const dropdownData = layer.data.props.dropdownData || (layer.data.props as any).ar;
+      const name = layer.data.props.name || (layer.data.props as any).a || 'Dropdown';
+      const groupKey = `${dropdownData}::${name}`;
+      if (!seenDropdownKeys.has(groupKey)) {
+        seenDropdownKeys.add(groupKey);
+        unifiedItems.push({ kind: 'dropdown', groupKey, layers: dropdownGroups[groupKey] || [] });
+      }
+    }
+  }
 
   return (
     <div
@@ -608,65 +623,55 @@ const ElementsContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           </CollapsibleSection>
         )}
 
-        {textLayers.length > 0 && (
-          <CollapsibleSection title={`TEXT ELEMENTS (${textLayers.length})`} dotColor="#3b82f6">
-            {textLayers.map((layer) => {
-              const name = layer.data.props.name || (layer.data.props as any).a;
-              const text = layer.data.props.text || (layer.data.props as any).v;
-              const plainText = extractTextFromHtml(text || '');
-              const fonts = layer.data.props.fonts || (layer.data.props as any).f;
-              const fontName = fonts && fonts.length > 0 ? fonts[0].name : undefined;
-
-              return (
-                <TextInputItem
-                  key={layer.id}
-                  label={name || 'Text Element'}
-                  value={plainText}
-                  fontName={fontName}
-                  onChange={(val) => handleTextChange(layer.id, text || '', val)}
-                />
-              );
-            })}
-          </CollapsibleSection>
-        )}
-
-        {dropdownGroupKeys.length > 0 && (
-          <CollapsibleSection title="DROPDOWNS" dotColor="#f59e0b">
-            {dropdownGroupKeys.map(groupKey => {
-              const layersInGroup = dropdownGroups[groupKey];
-              const [file] = groupKey.split('::');
-              const data = dropdownDataCache[file] || [];
-              
-              // Try to find the currently selected value
-              let currentValue = '';
-              const firstTextLayer = layersInGroup.find(l => l.data.type === 'Text');
-              if (firstTextLayer) {
-                 const text = firstTextLayer.data.props.text || (firstTextLayer.data.props as any).v;
-                 const currentText = extractTextFromHtml(text || '');
-                 const matchedItem = data.find(item => item.text === currentText);
-                 if (matchedItem) currentValue = matchedItem.id;
+        {unifiedItems.length > 0 && (
+          <CollapsibleSection title="ELEMENTS" dotColor="#3b82f6">
+            {unifiedItems.map((item) => {
+              if (item.kind === 'text') {
+                const { layer } = item;
+                const name = layer.data.props.name || (layer.data.props as any).a;
+                const text = layer.data.props.text || (layer.data.props as any).v;
+                const plainText = extractTextFromHtml(text || '');
+                const fonts = layer.data.props.fonts || (layer.data.props as any).f;
+                const fontName = fonts && fonts.length > 0 ? fonts[0].name : undefined;
+                return (
+                  <TextInputItem
+                    key={layer.id}
+                    label={name || 'Text Element'}
+                    value={plainText}
+                    fontName={fontName}
+                    onChange={(val) => handleTextChange(layer.id, text || '', val)}
+                  />
+                );
               } else {
-                 const firstImageLayer = layersInGroup.find(l => l.data.type === 'Image');
-                 if (firstImageLayer) {
+                const { groupKey, layers: layersInGroup } = item;
+                const [file] = groupKey.split('::');
+                const data = dropdownDataCache[file] || [];
+                let currentValue = '';
+                const firstTextLayer = layersInGroup.find(l => l.data.type === 'Text');
+                if (firstTextLayer) {
+                  const text = firstTextLayer.data.props.text || (firstTextLayer.data.props as any).v;
+                  const currentText = extractTextFromHtml(text || '');
+                  const matchedItem = data.find(d => d.text === currentText);
+                  if (matchedItem) currentValue = matchedItem.id;
+                } else {
+                  const firstImageLayer = layersInGroup.find(l => l.data.type === 'Image');
+                  if (firstImageLayer) {
                     const image = firstImageLayer.data.props.image || (firstImageLayer.data.props as any).p;
-                    const currentImage = image?.url;
-                    const matchedItem = data.find(item => item.logo === currentImage);
+                    const matchedItem = data.find(d => d.logo === image?.url);
                     if (matchedItem) currentValue = matchedItem.id;
-                 }
+                  }
+                }
+                const firstLayerName = layersInGroup[0]?.data.props.name || (layersInGroup[0]?.data.props as any).a || 'Dropdown';
+                return (
+                  <DropdownItemComponent
+                    key={`dropdown-${groupKey}`}
+                    label={firstLayerName}
+                    value={currentValue}
+                    options={data}
+                    onChange={(val) => handleDropdownChange(groupKey, val)}
+                  />
+                );
               }
-
-              // Get the name of the first layer in the group to use as the dropdown label
-              const firstLayerName = layersInGroup[0]?.data.props.name || (layersInGroup[0]?.data.props as any).a || 'Dropdown';
-
-              return (
-                <DropdownItemComponent
-                  key={`dropdown-${groupKey}`}
-                  label={firstLayerName}
-                  value={currentValue}
-                  options={data}
-                  onChange={(val) => handleDropdownChange(groupKey, val)}
-                />
-              );
             })}
           </CollapsibleSection>
         )}
