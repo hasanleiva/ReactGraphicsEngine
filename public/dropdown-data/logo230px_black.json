@@ -1,0 +1,82 @@
+[
+  {
+    "id": "option-1",
+    "text": "Andijon",
+    "logo": "/dropdown-data/logos/230px_black/andijon.png"
+  },
+  {
+    "id": "option-2",
+    "text": "Bunyodkor",
+    "logo": "/dropdown-data/logos/230px_black/bunyodkor.png"
+  },
+  {
+    "id": "option-3",
+    "text": "Buxoro",
+    "logo": "/dropdown-data/logos/230px_black/buxoro.png"
+  },
+  {
+    "id": "option-4",
+    "text": "Dinamo",
+    "logo": "/dropdown-data/logos/230px_black/dinamo.png"
+  },
+  {
+    "id": "option-5",
+    "text": "Lokomotiv",
+    "logo": "/dropdown-data/logos/230px_black/lokomotiv.png"
+  },
+  {
+    "id": "option-6",
+    "text": "Mash'al",
+    "logo": "/dropdown-data/logos/230px_black/mashal.png"
+  },
+  {
+    "id": "option-7",
+    "text": "Nasaf",
+    "logo": "/dropdown-data/logos/230px_black/nasaf.png"
+  },
+  {
+    "id": "option-8",
+    "text": "Navbahor",
+    "logo": "/dropdown-data/logos/230px_black/navbahor.png"
+  },
+  {
+    "id": "option-9",
+    "text": "Neftchi",
+    "logo": "/dropdown-data/logos/230px_black/neftchi.png"
+  },
+  {
+    "id": "option-10",
+    "text": "OKMK",
+    "logo": "/dropdown-data/logos/230px_black/okmk.png"
+  },
+  {
+    "id": "option-11",
+    "text": "Paxtakor",
+    "logo": "/dropdown-data/logos/230px_black/paxtakor.png"
+  },
+  {
+    "id": "option-12",
+    "text": "Qizilqum",
+    "logo": "/dropdown-data/logos/230px_black/qizilqum.png"
+  },
+  {
+    "id": "option-13",
+    "text": "Qo'qon-1912",
+    "logo": "/dropdown-data/logos/230px_black/qoqon1912.png"
+  },
+  {
+    "id": "option-14",
+    "text": "So'g'diyona",
+    "logo": "/dropdown-data/logos/230px_black/sogdiyona.png"
+  },
+  {
+    "id": "option-15",
+    "text": "Surxon",
+    "logo": "/dropdown-data/logos/230px_black/surxon.png"
+  },
+  {
+    "id": "option-16",
+    "text": "Xorazm",
+    "logo": "/dropdown-data/logos/230px_black/xorazm.png"
+  }
+]
